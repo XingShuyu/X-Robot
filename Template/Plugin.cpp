@@ -445,6 +445,7 @@ int PluginInit()
 	fstream BindIDFile;
 	BindIDFile.open(".\\plugins\\LL_Robot\\BindID.json");
 	BindIDFile >> BindID;
+	BindIDFile.close();
 
 	LL::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2));//注册插件
 		//为不影响LiteLoader启动而创建新线程运行winsocket
