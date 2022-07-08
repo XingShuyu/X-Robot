@@ -58,7 +58,7 @@ jobs:
         mkdir D:/out/sdk
         mkdir D:/out/sdk/Lib
         mkdir D:/out/sdk/Header
-        mkdir D:/out/plugins
+        mkdir D:/out/plugins/LL_Robot
     
     - name: Copy Out Files
       working-directory: ${{env.GITHUB_WORKSPACE}}
