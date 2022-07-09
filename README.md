@@ -22,8 +22,7 @@ https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0
 3. 打开go-cqhttp配置文件，http通信设置为
 ```
   - http: # HTTP 通信设置
-      host: 127.0.0.1 # 服务端监听地址
-      port: 5700      # 服务端监听端口
+      address: 0.0.0.0:5700 # HTTP监听地址
       timeout: 5      # 反向 HTTP 超时时间, 单位秒，<5 时将被忽略
       long-polling:   # 长轮询拓展
         enabled: false       # 是否开启
@@ -35,7 +34,7 @@ https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0
       #  secret: ''             # 密钥
       #  max-retries: 3         # 最大重试，0 时禁用
       #  retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
-      - url: http://127.0.0.1:5701 # 地址
+      - url: http://127.0.0.1:5701/ # 地址
         secret: ''                  # 密钥
         max-retries: 0             # 最大重试，0 时禁用
         retries-interval: 0      # 重试时间，单位毫秒，0 时立即
