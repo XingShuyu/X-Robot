@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <httplib.h>
+#include "SysInfo.h"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -31,7 +32,6 @@ string GROUPID = std::to_string(GROUPIDINT);
 string serverName = "服务器";
 json BindID;
 json op;
-
 
 using namespace std;
 
@@ -331,9 +331,6 @@ int websocketsrv()
 				if (groupid == GROUPIDINT)
 				{
 					//常规指令集
-
-
-
 					if (message.find("sudo") == 0 && message.length() >= 7)
 					{
 						//辨权
@@ -382,6 +379,20 @@ int websocketsrv()
 						message = message.substr(5, message.length());
 						msgCut(message, username);
 					}
+					if (message == "查服")
+					{
+						msgAPI sendMsg;
+						int current_pid = GetCurrentPid();
+						float cpu_usage_ratio = GetCpuUsageRatio(current_pid);
+						float memory_usage = GetMemoryUsage(current_pid);
+						cpu_usage_ratio = cpu_usage_ratio * 100;
+						int cpu_usage = cpu_usage_ratio;
+						string msg = "服务器信息%0A进程PID: " + to_string(current_pid) + "%0ACPU使用率: " + to_string(cpu_usage) + "%25%0A内存占用: " + to_string(memory_usage) + "MB";
+						sendMsg.groupMsg(GROUPID, msg);
+						listPlayer();
+					}
+
+
 
 					//ID与白名单相关
 					if (notice_type == "group_increase" || message == "重置个人绑定")
@@ -398,7 +409,14 @@ int websocketsrv()
 						msg = "whitelist remove " + XboxName;
 						Level::runcmd(msg);
 					}
+					if (message == "查询绑定")
+					{
+						msgAPI sendMsg;
+						string XboxName = BindID[to_string(userid)];
+						string msg = "玩家[CQ:at,qq=" + to_string(userid) + "],你的绑定是: " + XboxName;
+						sendMsg.groupMsg(GROUPID, msg);
 
+					}
 
 					//自定义指令集
 					//用新线程属于是性能换时间了
