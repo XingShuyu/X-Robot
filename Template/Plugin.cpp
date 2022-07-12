@@ -30,6 +30,7 @@ int GROUPIDINT = 452675761;
 string GROUPID = std::to_string(GROUPIDINT);
 string serverName = "服务器";
 json BindID;
+json op;
 
 
 using namespace std;
@@ -330,16 +331,42 @@ int websocketsrv()
 				if (groupid == GROUPIDINT)
 				{
 					//常规指令集
-					if (message.find("sudo") == 0 && role != "member" && message.length() >= 6)//QQ执行指令
+
+
+
+					if (message.find("sudo") == 0 && message.length() >= 7)
 					{
-						message = message.substr(5, message.length());
-						Level::runcmd(message);
+						//辨权
+						if (op["OP"] == 0)
+						{
+							if (role != "member")//QQ执行指令
+							{
+								message = message.substr(5, message.length());
+								Level::runcmd(message);
+							}
+							else if (role == "member")
+							{
+								msgAPI sendmsg;
+								sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
+							}
+						}
+						else if (op["OP"] == 1)
+						{
+							try
+							{
+								int playerOp = op[to_string(userid)];
+								message = message.substr(5, message.length());
+								Level::runcmd(message);
+							}
+							catch (...)
+							{
+								msgAPI sendmsg;
+								sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
+							}
+						}
 					}
-					else if (role == "member" && message.find("sudo") == 0)
-					{
-						msgAPI sendmsg;
-						sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
-					}
+
+
 					if (message.find("添加白名单") == 0 && role == "owner" && message.length() >= 17)
 					{
 						message = message.substr(16, message.length());
@@ -419,22 +446,11 @@ int websocketsrv()
 }
 int PluginInit()
 {
-	//信息文件的读取和默认值写入
-	json info = "{\"QQ_group_id\":722047078,\"serverName\":\"Your Server Name\"}"_json;//信息默认值
-	json File;
+	//信息文件的读取
+	json info;
 	fstream infoFile;
 	infoFile.open(".\\plugins\\LL_Robot\\RobotInfo.json");
-	if (infoFile.fail() == 1)
-	{
-		infoFile.close();
-		ofstream o(".\\plugins\\LL_Robot\\RobotInfo.json");
-		o << setw(4) << info << endl;
-		o.close();
-	}
-	else
-	{
-		infoFile >> info;
-	}
+	infoFile >> info;
 	GROUPIDINT = info["QQ_group_id"];
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
@@ -446,6 +462,13 @@ int PluginInit()
 	BindIDFile.open(".\\plugins\\LL_Robot\\BindID.json");
 	BindIDFile >> BindID;
 	BindIDFile.close();
+
+
+	//op权限名单的读取和写入
+	fstream OPFile;
+	OPFile.open(".\\plugins\\LL_Robot\\op.json");
+	OPFile >> op;
+
 
 	LL::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2));//注册插件
 		//为不影响LiteLoader启动而创建新线程运行winsocket
