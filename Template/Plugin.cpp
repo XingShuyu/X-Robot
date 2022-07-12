@@ -81,7 +81,7 @@ void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
 	return;
 }
 
-void msgCut(string message,string username)
+inline void msgCut(string message,string username)
 {
 	string sendmsg;
 	msgcut:if (message.find("[CQ:image") != message.npos)
@@ -125,7 +125,7 @@ void msgCut(string message,string username)
 	}
 
 }//QQ消息处理
-void listPlayer()
+inline void listPlayer()
 {
 	vector<Player*> allPlayer = Level::getAllPlayers();
 	int playerNum = allPlayer.size();
@@ -146,7 +146,7 @@ void listPlayer()
 	sendMsg.groupMsg(GROUPID, msg);
 }
 
-int customMsg(string message,string username)
+inline int customMsg(string message,string username)
 {
 	fstream messageFile;
 	messageFile.open(".\\plugins\\LL_Robot\\Message.json");
@@ -180,7 +180,7 @@ int customMsg(string message,string username)
 		num++;
 	}
 }
-int addNewPlayer(string &message, int &groupId, int &userid)
+inline int addNewPlayer(string &message, int &groupId, int &userid)
 {
 	msgAPI sendMsg;
 	string adderId = to_string(userid);
@@ -208,7 +208,7 @@ int addNewPlayer(string &message, int &groupId, int &userid)
 }
 
 
-int websocketsrv()
+inline int websocketsrv()
 {
 	WSADATA wsaData;
 	int iResult;
@@ -387,7 +387,8 @@ int websocketsrv()
 						float memory_usage = GetMemoryUsage(current_pid);
 						cpu_usage_ratio = cpu_usage_ratio * 100;
 						int cpu_usage = cpu_usage_ratio;
-						string msg = "服务器信息%0A进程PID: " + to_string(current_pid) + "%0ACPU使用率: " + to_string(cpu_usage) + "%25%0A内存占用: " + to_string(memory_usage) + "MB";
+						int memory_usageInt = memory_usage;
+						string msg = "服务器信息%0A进程PID: " + to_string(current_pid) + "%0ACPU使用率: " + to_string(cpu_usage) + "%25%0A内存占用: " + to_string(memory_usageInt) + "MB";
 						sendMsg.groupMsg(GROUPID, msg);
 						listPlayer();
 					}
