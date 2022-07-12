@@ -45,7 +45,9 @@ https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0
 7. 调整控制台编码为UTF-8
 8. 启动BDS见到“Websocket Loaded”则已启动完成，QQ群发送“服务器已启动”
 
->自定义指令功能
+>功能使用
+
+>>自定义指令功能
 1. 打开插件中的Message文件
 2. 根据范例，依次往后排序号0，1，2...
 3. 其中的QQ表示QQ收到的信息，mc表示QQ收到信息后在mc聊天板发送的东西，cmd表示QQ收到消息后控制台执行的命令
@@ -69,6 +71,23 @@ https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0
   "mc": ""
   "cmd": ""
 ```
+>>OP鉴权
+op鉴定权默认为支持所有管理员执行op命令，但是可以通过更改op.json来更改
+op权限就是谁能执行上文的sudo指令
+这是默认值(所有管理员都允许执行op)
+```
+{
+  "OP": 0
+}
+```
+想要令特定成员成员拥有权限，而其他人没有，可以这样写
+```
+{
+  "OP": 1,
+  "778599906": 1
+}
+```
+这个配置文件给与了778599906这个群成员op权限
 
 >使用第三方软件列表
 * [[Mrs4s/go-cqhttp]](https://github.com/Mrs4s/go-cqhttp)
