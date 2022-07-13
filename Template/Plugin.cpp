@@ -394,7 +394,7 @@ inline int websocketsrv()
 					if (message == "菜单")
 					{
 						msgAPI sendMsg;
-						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中chat 发送消息到mc%0A4. QQ中管理员以上级别\"sudo 命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令";
+						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中chat 发送消息到mc%0A4. QQ中管理员以上级别\"sudo 命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
 						sendMsg.groupMsg(GROUPID, msg);
 					}
 
