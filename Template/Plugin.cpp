@@ -417,7 +417,15 @@ inline int websocketsrv()
 					if (message == "查询绑定")
 					{
 						msgAPI sendMsg;
-						string XboxName = BindID[to_string(userid)];
+						string XboxName;
+						try
+						{
+							XboxName = BindID[to_string(userid)];
+						}
+						catch (...)
+						{
+							XboxName = "未绑定";
+						}
 						string msg = "玩家[CQ:at,qq=" + to_string(userid) + "],你的绑定是: " + XboxName;
 						sendMsg.groupMsg(GROUPID, msg);
 
