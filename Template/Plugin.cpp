@@ -33,6 +33,7 @@ string GROUPID = std::to_string(GROUPIDINT);
 string serverName = "服务器";
 json BindID;
 json op;
+string port;
 
 using namespace std;
 
@@ -131,7 +132,7 @@ inline void listPlayer()
 	vector<Player*> allPlayer = Level::getAllPlayers();
 	int playerNum = allPlayer.size();
 	int i = 0;
-	string msg="服务器在线玩家:%0A"+to_string(playerNum) + "位在线玩家%0A";
+	string msg = serverName + "服务器在线玩家:%0A" + to_string(playerNum) + "位在线玩家%0A";
 	if (playerNum != 0)
 	{
 		while (i < playerNum)
@@ -183,23 +184,50 @@ inline int addNewPlayer(string &message, int &groupId, int &userid)
 {
 	msgAPI sendMsg;
 	string adderId = to_string(userid);
-	string msg = "欢迎新成员[CQ:at,qq=" + to_string(userid) + "],让我们开始一些基础设置吧";
-	sendMsg.groupMsg(GROUPID, msg);
-	sendMsg.groupMsg(GROUPID, "现在，请发送你的XboxID，即你的游戏名，我们将为你绑定白名单。");
+	string msg;
+	string oldId = "";
+	try
+	{
+		oldId = BindID[adderId];
+		msg = "你好,[CQ:at,qq=" + adderId + "],你以前的id是: " + oldId + "更改将会删除旧的白名单，若确定更改，请告诉我你的XboxID";
+		sendMsg.groupMsg(GROUPID, msg);
+
+	}
+	catch(...)
+	{
+		msg = "欢迎新成员[CQ:at,qq=" + to_string(userid) + "],让我们开始一些基础设置吧";
+		sendMsg.groupMsg(GROUPID, msg);
+		sendMsg.groupMsg(GROUPID, "现在，请发送你的XboxID，即你的游戏名，我们将为你绑定白名单。");
+	}
+
 	userid = 0;
 	while (1)
 	{
 		if (to_string(userid) == adderId)
 		{
 			string messageOLD = message;
-			msg = "你的XboxID为：" + messageOLD+" %0A正在为你绑定...";
-			sendMsg.groupMsg(GROUPID, msg);
-			msg = "whitelist add " + messageOLD;
-			Level::runcmd(msg);
-			BindID[adderId] = messageOLD;
-			ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
-			a << std::setw(4) << BindID << std::endl;
-			break;
+			cout << messageOLD << endl;
+			if (messageOLD.find("CQ:") == messageOLD.npos)
+			{
+				msg = "你的XboxID为：" + messageOLD + " %0A正在为你绑定...";
+				sendMsg.groupMsg(GROUPID, msg);
+				msg = "whitelist add " + messageOLD;
+				Level::runcmd(msg);
+				BindID[adderId] = messageOLD;
+				ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
+				a << std::setw(4) << BindID << std::endl;
+				if (oldId != "")
+				{
+					msg = "whitelist remove " + oldId;
+					Level::runcmd(msg);
+				}
+				break;
+			}
+			else
+			{
+				sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
+				break;
+			}
 		}
 	}
 
@@ -217,7 +245,7 @@ inline int websocketsrv()
 		printf("WSAStartup failed: %d\n", iResult);
 		return 1;
 	}
-#define DEFAULT_PORT "5701"
+	PCSTR DEFAULT_PORT = port.c_str();
 
 	struct addrinfo* result = NULL, * ptr = NULL, hints;
 
@@ -387,7 +415,7 @@ inline int websocketsrv()
 						cpu_usage_ratio = cpu_usage_ratio * 100;
 						int cpu_usage = cpu_usage_ratio;
 						int memory_usageInt = memory_usage;
-						string msg = "服务器信息%0A进程PID: " + to_string(current_pid) + "%0ACPU使用率: " + to_string(cpu_usage) + "%25%0A内存占用: " + to_string(memory_usageInt) + "MB";
+						string msg = serverName+"服务器信息%0A进程PID: " + to_string(current_pid) + "%0ACPU使用率: " + to_string(cpu_usage) + "%25%0A内存占用: " + to_string(memory_usageInt) + "MB";
 						sendMsg.groupMsg(GROUPID, msg);
 						listPlayer();
 					}
@@ -485,7 +513,8 @@ int PluginInit()
 	GROUPIDINT = info["QQ_group_id"];
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
-	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl;
+	port = info["port"];
+	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
 
 
 	//绑定名单的读取和写入
@@ -527,14 +556,14 @@ int PluginInit()
 			msgAPI msgSend;
 			Player* Player = ev.mPlayer;//获取触发监听的玩家
 			string mMessage= ev.mMessage;
-			string msg = "<" + ev.mPlayer->getRealName() + ">" + mMessage;
+			string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
 			msgSend.groupMsg(GROUPID, msg);
 			return true;
 		});
 	Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
 		{
 			msgAPI msgSend;
-			string outPut = ev.mOutput;
+			string outPut = serverName + ": " + ev.mOutput;
 			msgSend.groupMsg(GROUPID, outPut);
 			return true;
 		});
