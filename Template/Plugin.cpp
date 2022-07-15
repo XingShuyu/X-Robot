@@ -245,7 +245,7 @@ inline int websocketsrv()
 		printf("WSAStartup failed: %d\n", iResult);
 		return 1;
 	}
-	PCSTR DEFAULT_PORT = port.c_str();
+#define DEFAULT_PORT port.c_str()
 
 	struct addrinfo* result = NULL, * ptr = NULL, hints;
 
@@ -466,12 +466,11 @@ inline int websocketsrv()
 
 					
 				}
-
-				
-				
-
+				string sedbuf= "HTTP/1.1 200 OK\r\n";
 				// Echo the buffer back to the sender
-				iSendResult = send(ClientSocket, recvbuf, iResult, 0);
+				iSendResult = send(ClientSocket, sedbuf.c_str(), sedbuf.length(), 0);
+				sedbuf = "Cache-Control:public\r\nContent-Type:text/plain;charset=ASCII\r\nServer:Tengine/1.4.6\r\n\r\n";
+				iSendResult = send(ClientSocket, sedbuf.c_str(), sedbuf.length(), 0);
 				if (iSendResult == SOCKET_ERROR) {
 					printf("send failed: %d\n", WSAGetLastError());
 					closesocket(ClientSocket);
