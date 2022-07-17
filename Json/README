@@ -1,5 +1,7 @@
 {
   "QQ_group_id": 722047078,
   "serverName": "Your Server Name",
+  "join/escape": true,
+  "with_chat": false,
   "port": "5701"
 }
