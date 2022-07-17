@@ -58,7 +58,7 @@ jobs:
         mkdir D:/out/sdk
         mkdir D:/out/sdk/Lib
         mkdir D:/out/sdk/Header
-        mkdir D:/out/plugins/LL_Robot
+        mkdir D:/out/plugins/LL_Robot/LL_Robot
     
     - name: Copy Out Files
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -66,7 +66,7 @@ jobs:
         cp x64/Release/*.dll D:/out/plugins/LL_Robot
         cp x64/Release/*.lib D:/out/sdk/Lib
         cp x64/Release/*.pdb D:/out/plugins/LL_Robot
-        cp Json/*.json D:/out/plugins/LL_Robot
+        cp Json/*.json D:/out/plugins/LL_Robot/LL_Robot
         mv D:/out/plugins/LL_Robot/Template.dll D:/out/plugins/LL_Robot/LL_Robot.dll
         ls
       shell: bash
