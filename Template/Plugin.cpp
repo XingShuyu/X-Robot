@@ -583,4 +583,5 @@ int PluginInit()
 				msgSend.groupMsg(GROUPID, msg);
 				return true;
 			});
+	}
 }
