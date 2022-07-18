@@ -407,6 +407,10 @@ inline int websocketsrv()
 						message = message.substr(5, message.length());
 						msgCut(message, username);
 					}
+					else if (with_chat)
+					{
+						msgCut(message, username)
+					}
 					if (message == "查服")
 					{
 						msgAPI sendMsg;
