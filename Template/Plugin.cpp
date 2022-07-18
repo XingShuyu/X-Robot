@@ -402,12 +402,12 @@ inline int websocketsrv()
 					{
 						listPlayer();
 					}
-					if (message.find("chat") == 0 && message.length() >= 6)
+					if (message.find("chat") == 0 && message.length() >= 6 && with_chat == true)
 					{
 						message = message.substr(5, message.length());
 						msgCut(message, username);
 					}
-					else if (with_chat)
+					else if (with_chat == false)
 					{
 						msgCut(message, username);
 					}
