@@ -409,7 +409,7 @@ inline int websocketsrv()
 					}
 					else if (with_chat)
 					{
-						msgCut(message, username)
+						msgCut(message, username);
 					}
 					if (message == "查服")
 					{
