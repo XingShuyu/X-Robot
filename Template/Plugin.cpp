@@ -34,7 +34,7 @@ string serverName = "服务器";
 json BindID;
 json op;
 string port;
-bool with_chat join_escape;
+bool with_chat,join_escape;
 
 using namespace std;
 
