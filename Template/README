@@ -34,6 +34,7 @@ string serverName = "服务器";
 json BindID;
 json op;
 string port;
+bool with_chat join_escape;
 
 using namespace std;
 
@@ -513,6 +514,8 @@ int PluginInit()
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
 	port = info["port"];
+	with_chat = info["with_chat"];
+	join_escape = info["join/escape"];
 	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
 
 
@@ -541,15 +544,6 @@ int PluginInit()
 			return 0;
 		});
 
-	//这部分为在玩家加入时发送XXX加入了游戏，如要启用，可以删除头，尾的"/*","*/"随后编译
-	/*Event::PlayerJoinEvent::subscribe([](const Event::PlayerJoinEvent& ev)
-		{//
-			msgAPI msgSend;
-			Player* Player = ev.mPlayer;//获取触发监听的玩家
-			string msg = ev.mPlayer->getRealName() + "加入了游戏";
-			msgSend.groupMsg(GROUPID, msg);
-			return true;
-		});*/
 	Event::PlayerChatEvent::subscribe([](const Event::PlayerChatEvent& ev)
 		{//
 			msgAPI msgSend;
@@ -566,14 +560,27 @@ int PluginInit()
 			msgSend.groupMsg(GROUPID, outPut);
 			return true;
 		});
-	//这部分为在玩家离开时发送XXX离开了游戏，如要启用，可以删除头，尾的"/*","*/"随后编译
-	/*Event::PlayerLeftEvent::subscribe([](const Event::PlayerLeftEvent& ev)
-		{//
-			msgAPI msgSend;
-			Player* Player = ev.mPlayer;//获取触发监听的玩家
-			string msg = ev.mPlayer->getRealName() + "离开了游戏";
-			msgSend.groupMsg(GROUPID, msg);
-			return true;
-		});
-	*/
+	if(join_escape)
+	{
+	
+		//这部分为在玩家离开时发送XXX离开了游戏，如要启用，可以删除头，尾的"/*","*/"随后编译
+		Event::PlayerLeftEvent::subscribe([](const Event::PlayerLeftEvent& ev)
+			{//
+				msgAPI msgSend;
+				Player* Player = ev.mPlayer;//获取触发监听的玩家
+				string msg = ev.mPlayer->getRealName() + "离开了游戏";
+				msgSend.groupMsg(GROUPID, msg);
+				return true;
+			});
+	
+
+		//这部分为在玩家加入时发送XXX加入了游戏，如要启用，可以删除头，尾的"/*","*/"随后编译
+		Event::PlayerJoinEvent::subscribe([](const Event::PlayerJoinEvent& ev)
+			{//
+				msgAPI msgSend;
+				Player* Player = ev.mPlayer;//获取触发监听的玩家
+				string msg = ev.mPlayer->getRealName() + "加入了游戏";
+				msgSend.groupMsg(GROUPID, msg);
+				return true;
+			});
 }
