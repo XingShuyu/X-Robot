@@ -212,7 +212,7 @@ inline int addNewPlayer(string &message, int &groupId, int &userid)
 			{
 				msg = "你的XboxID为：" + messageOLD + " %0A正在为你绑定...";
 				sendMsg.groupMsg(GROUPID, msg);
-				msg = "whitelist add " + messageOLD;
+				msg = "whitelist add \"" + messageOLD + "\"";
 				Level::runcmd(msg);
 				BindID[adderId] = messageOLD;
 				ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
@@ -395,7 +395,7 @@ inline int websocketsrv()
 					if (message.find("添加白名单") == 0 && role == "owner" && message.length() >= 17)
 					{
 						message = message.substr(16, message.length());
-						string cmd = "whitelist add " + message;
+						string cmd = "whitelist add \"" + message+"\"";
 						Level::runcmd(cmd);
 					}
 					if (message == "list")//玩家列表
