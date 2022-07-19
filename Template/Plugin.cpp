@@ -177,6 +177,12 @@ inline int customMsg(string message,string username)
 				sendmsg = serverName+":<" + username + ">" + sendmsg;
 				Level::broadcastText(sendmsg, (TextType)0);
 			}
+			if (customMessage[to_string(num)]["QQback"] != "")
+			{
+				string sendmsg = customMessage[to_string(num)]["QQback"];
+				msgAPI sendMsg;
+				sendMsg.groupMsg(GROUPID, sendmsg);
+			}
 		}
 		num++;
 	}
