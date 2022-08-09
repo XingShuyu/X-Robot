@@ -29,12 +29,14 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 int GROUPIDINT = 452675761;
-string GROUPID = std::to_string(GROUPIDINT);
-string serverName = "服务器";
-json BindID;
-json op;
-string port;
-bool with_chat,join_escape;
+string GROUPID = std::to_string(GROUPIDINT);//QQ群号
+string serverName = "服务器";//服务器名称
+json BindID;//绑定
+json op;//op鉴定权限
+string port;//服务器端口
+bool with_chat,join_escape;//配置选择
+string cmdMsg;//控制台消息
+
 
 using namespace std;
 
@@ -147,7 +149,7 @@ inline void listPlayer()
 	sendMsg.groupMsg(GROUPID, msg);
 }
 
-inline int customMsg(string message,string username)
+inline int customMsg(string message,string username,string cmdMsg,string userid)
 {
 	fstream messageFile;
 	messageFile.open(".\\plugins\\LL_Robot\\Message.json");
@@ -167,6 +169,7 @@ inline int customMsg(string message,string username)
 		}
 		if (fileMsg == message)
 		{
+			
 			if (customMessage[to_string(num)]["cmd"] != "")
 			{
 				Level::runcmd(customMessage[to_string(num)]["cmd"]);
@@ -180,8 +183,26 @@ inline int customMsg(string message,string username)
 			if (customMessage[to_string(num)]["QQback"] != "")
 			{
 				string sendmsg = customMessage[to_string(num)]["QQback"];
+				string newStr = customMessage[to_string(num)]["QQback"];
 				msgAPI sendMsg;
-				sendMsg.groupMsg(GROUPID, sendmsg);
+				regexStart:if (sendmsg.find("#") != sendmsg.npos && sendmsg.find("$") != sendmsg.npos)
+				{
+					string cutMsg = sendmsg.substr(sendmsg.find("$"), 3);
+					regex pattern(sendmsg.substr(sendmsg.find("#") + 1, sendmsg.find("$") - sendmsg.find("#")-1));
+					if (cutMsg == "$QQ") { cutMsg = userid; }
+					if (cutMsg == "$MC") { cutMsg = cmdMsg; }
+					if (cutMsg == "$QM") { cutMsg = message; }
+					if (cutMsg == "$QN") { cutMsg = username; }
+					smatch result;
+					string::const_iterator iterStart = cutMsg.begin();
+					string::const_iterator iterEnd = cutMsg.end();
+					regex_search(iterStart, iterEnd, result, pattern);
+					newStr.replace(newStr.find("#"), newStr.find("$") - newStr.find("#") + 3, result[0]);
+					cout << newStr << endl;
+					sendmsg = sendmsg.substr(sendmsg.find("$") + 3, sendmsg.length());
+					goto regexStart;
+				}
+				sendMsg.groupMsg(GROUPID, newStr);
 			}
 		}
 		num++;
@@ -240,7 +261,6 @@ inline int addNewPlayer(string &message, int &groupId, int &userid)
 
 
 }
-
 
 inline int websocketsrv()
 {
@@ -472,7 +492,7 @@ inline int websocketsrv()
 
 					//自定义指令集
 					//用新线程属于是性能换时间了
-					thread newthread(customMsg, message, username);
+					thread newthread(customMsg, message, username, cmdMsg, to_string(userid));
 					newthread.detach();
 
 					
@@ -566,6 +586,7 @@ int PluginInit()
 	Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
 		{
 			msgAPI msgSend;
+			cmdMsg = ev.mOutput;
 			string outPut = serverName + ": " + ev.mOutput;
 			msgSend.groupMsg(GROUPID, outPut);
 			return true;
