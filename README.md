@@ -2,6 +2,7 @@
 一个为BDS定制的LL机器人
 
 >功能列表
+
 1. MC聊天->QQ的转发
 2. list查在线玩家
 3. QQ中chat 发送消息到mc
@@ -9,25 +10,31 @@
 5. QQ新群员自动增加白名单，群员退群取消白名单,"重置个人绑定"来重置,"查询绑定"来查询
 6. 发送"查服"来获取服务器信息
 7. 发送"菜单"获取指令列表
-8. 自定义指令 
+8. 自定义指令
 
 >选择我们有哪些好处?
+
 1. 性能占用少
-
    使用C++开发，最大程度优化插件性能。插件内存占用不过50MB，CPU占用更是少之又少
-2. 稳定，完善
 
-   插件开发经历了3个月的测试(到目前为止)表现稳定，bug少。功能完善且配置方便。只需寥寥几笔即可完成配置，可谓是懒人必备
+2. 稳定，完善
+   插件开发经历了4个月的测试(到目前为止)表现稳定，bug少。功能完善且配置方便。只需寥寥几笔即可完成配置，可谓是懒人必备
+
+3. 懒人
+   插件配置方便，即装即用，无需额外配置
+
+4. 无UI
+   没有UI的机器人，所有配置均可通过修改配置文件达到，Linux，面板服也能快乐使用
 
 >安装指南
-
 
 >>视频指南
 
 https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0/734787/Windows%20Server%202016-%20VMware%20Workstation%2016%20Player%20%28%E4%BB%85%E7%94%A8%E4%BA%8E%E9%9D%9E%E5%95%86%E4%B8%9A%E7%94%A8%E9%80%94%29%202022-07-09%2008-46-02.mp4
 
 >>文字指南
-1. 在Release或Action中下载LL_Robot.zip，并解压在BDS\plugins文件夹中，dll要在plugins中，json要在LL_Robot文件夹
+
+1. 在 [Release](https://github.com/XingShuyu/X-Robot/releases)中下载LL_Robot.zip，并解压在BDS\plugins文件夹中，dll要在plugins中，json要在LL_Robot文件夹
 2. 在[[Mrs4s/go-cqhttp]](https://github.com/Mrs4s/go-cqhttp)中下载go-cqhttp，并开启http通信
 3. 打开go-cqhttp配置文件，http通信设置为
 ```
@@ -55,6 +62,10 @@ https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0
 7. 调整控制台编码为UTF-8
 8. 启动BDS见到“Websocket Loaded”则已启动完成，QQ群发送“服务器已启动”
 
+>赞助
+不要求强制赞助，但是你的赞助可以帮助我更好的发展
+* [爱发电](https://afdian.net/@X-Robot)
+
 >功能使用
 
 >>自定义指令功能
@@ -81,6 +92,7 @@ https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0
   "mc": ""
   "cmd": ""
 ```
+
 >>OP鉴权
 op鉴定权默认为支持所有管理员执行op命令，但是可以通过更改op.json来更改
 op权限就是谁能执行上文的sudo指令
@@ -90,6 +102,7 @@ op权限就是谁能执行上文的sudo指令
   "OP": 0
 }
 ```
+
 想要令特定成员成员拥有权限，而其他人没有，可以这样写
 ```
 {
@@ -98,7 +111,6 @@ op权限就是谁能执行上文的sudo指令
 }
 ```
 这个配置文件给与了778599906这个群成员op权限
-
 >>多服务器支持
 多服务器支持配置步骤如下
 1. 按照基础配置方式，配置两台服务器
@@ -122,11 +134,13 @@ op权限就是谁能执行上文的sudo指令
 6. 保存，启动CQ和两个服务器
 
 >使用第三方软件列表
+
 * [[Mrs4s/go-cqhttp]](https://github.com/Mrs4s/go-cqhttp)
 * [[yhirose/cpp-httplib]](https://github.com/yhirose/cpp-httplib)
 * [[nlohmann/json]](https://github.com/nlohmann/json)
 
 >鸣谢
+
 * 感谢go-cqhttp,cpp-httplib,json三个项目的支持
 * 感谢LL中大佬的指教
 * 感谢Tenderbear服务器全体成员的测试
