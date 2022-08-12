@@ -82,6 +82,7 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="httplib.h" />
     <ClInclude Include="SysInfo.h" />
   </ItemGroup>
   <ItemGroup>
