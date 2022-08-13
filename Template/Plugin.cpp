@@ -34,7 +34,7 @@ string serverName = "服务器";//服务器名称
 json BindID;//绑定
 json op;//op鉴定权限
 string port;//服务器端口
-bool with_chat,join_escape;//配置选择
+bool with_chat,join_escape,QQforward,MCforward;//配置选择
 string cmdMsg;//控制台消息
 
 
@@ -544,8 +544,14 @@ int PluginInit()
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
 	port = info["port"];
-	with_chat = info["with_chat"];
-	join_escape = info["join/escape"];
+
+
+	with_chat = info["settings"]["with_chat"];
+	join_escape = info["settings"]["join/escape"];
+	QQforward = info["settings"]["QQForward"];
+	MCforward = info["settings"]["MCForward"];
+
+
 	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
 
 
@@ -563,7 +569,7 @@ int PluginInit()
 
 
 	LL::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2));//注册插件
-		//为不影响LiteLoader启动而创建新线程运行winsocket
+		//为不影响LiteLoader启动而创建新线程运行websocket
 	thread tl(websocketsrv);
 	tl.detach();
 
@@ -573,16 +579,18 @@ int PluginInit()
 			msgSend.groupMsg(GROUPID, "服务器已启动");
 			return 0;
 		});
-
-	Event::PlayerChatEvent::subscribe([](const Event::PlayerChatEvent& ev)
-		{//
-			msgAPI msgSend;
-			Player* Player = ev.mPlayer;//获取触发监听的玩家
-			string mMessage= ev.mMessage;
-			string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
-			msgSend.groupMsg(GROUPID, msg);
-			return true;
-		});
+	if(MCforward)
+	{
+		Event::PlayerChatEvent::subscribe([](const Event::PlayerChatEvent& ev)
+			{
+				msgAPI msgSend;
+				Player* Player = ev.mPlayer;//获取触发监听的玩家
+				string mMessage= ev.mMessage;
+				string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
+				msgSend.groupMsg(GROUPID, msg);
+				return true;
+			});
+	}
 	Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
 		{
 			msgAPI msgSend;

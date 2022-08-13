@@ -1,7 +1,11 @@
 {
-  "QQ_group_id": 722047078,
-  "serverName": "Your Server Name",
-  "join/escape": true,
-  "with_chat": false,
-  "port": "5701"
+	"QQ_group_id": 722047078,
+	"serverName": "Your Server Name",
+	"port": "5701",
+	"settings": {
+		"join/escape": true,
+		"with_chat": false,
+		"QQForward": true,
+		"MCForward": true
+	}
 }
