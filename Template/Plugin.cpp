@@ -459,7 +459,7 @@ inline int websocketsrv()
 
 
 					//ID与白名单相关
-					if ((notice_type == "group_increase" || message == "重置个人绑定") && whitelistAdd = true)
+					if ((notice_type == "group_increase" || message == "重置个人绑定") && whitelistAdd == true)
 					{
 						thread groupIncrease(addNewPlayer,ref(message),ref(groupid),ref(userid));
 						groupIncrease.detach();
