@@ -7,6 +7,6 @@
 		"with_chat": false,
 		"QQForward": true,
 		"MCForward": true,
-		"Whitelist": true
+		"WhitelistAdd": true
 	}
 }
