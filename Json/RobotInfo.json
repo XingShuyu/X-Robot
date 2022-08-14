@@ -6,6 +6,7 @@
 		"join/escape": true,
 		"with_chat": false,
 		"QQForward": true,
-		"MCForward": true
+		"MCForward": true,
+		"Whitelist": true
 	}
 }

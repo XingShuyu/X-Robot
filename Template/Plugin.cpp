@@ -34,7 +34,7 @@ string serverName = "服务器";//服务器名称
 json BindID;//绑定
 json op;//op鉴定权限
 string port;//服务器端口
-bool with_chat,join_escape,QQforward,MCforward;//配置选择
+bool with_chat,join_escape,QQforward,MCforward,whitelistAdd;//配置选择
 string cmdMsg;//控制台消息
 
 
@@ -459,7 +459,7 @@ inline int websocketsrv()
 
 
 					//ID与白名单相关
-					if (notice_type == "group_increase" || message == "重置个人绑定")
+					if ((notice_type == "group_increase" || message == "重置个人绑定") && whitelistAdd = true)
 					{
 						thread groupIncrease(addNewPlayer,ref(message),ref(groupid),ref(userid));
 						groupIncrease.detach();
@@ -550,6 +550,7 @@ int PluginInit()
 	join_escape = info["settings"]["join/escape"];
 	QQforward = info["settings"]["QQForward"];
 	MCforward = info["settings"]["MCForward"];
+	whitelistAdd = info["settings"]["WhitelistAdd"];
 
 
 	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
