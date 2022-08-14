@@ -31,7 +31,6 @@
 >>视频指南
 
 https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0/734787/Windows%20Server%202016-%20VMware%20Workstation%2016%20Player%20%28%E4%BB%85%E7%94%A8%E4%BA%8E%E9%9D%9E%E5%95%86%E4%B8%9A%E7%94%A8%E9%80%94%29%202022-07-09%2008-46-02.mp4
-
 >>文字指南
 
 1. 在 [Release](https://github.com/XingShuyu/X-Robot/releases)中下载LL_Robot.zip，并解压在BDS\plugins文件夹中，dll要在plugins中，json要在LL_Robot文件夹
