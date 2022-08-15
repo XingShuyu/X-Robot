@@ -24,6 +24,9 @@
     <ClInclude Include="SysInfo.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="httplib.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

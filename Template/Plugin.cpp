@@ -264,7 +264,7 @@ inline int addNewPlayer(string &message, int &groupId, int &userid)
 
 inline int websocketsrv()
 {
-	WSADATA wsaData;
+	reload:WSADATA wsaData;
 	int iResult;
 	// Initialize Winsock
 	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -506,7 +506,11 @@ inline int websocketsrv()
 					printf("send failed: %d\n", WSAGetLastError());
 					closesocket(ClientSocket);
 					WSACleanup();
-					return 1;
+					closesocket(ListenSocket);
+					WSACleanup();
+					cout << "reloading" << endl;
+					goto reload;
+					//return 1;
 				}
 
 			}
@@ -544,10 +548,11 @@ int PluginInit()
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
 	port = info["port"];
-
+	cout << 1 << endl;
 
 	with_chat = info["settings"]["with_chat"];
 	join_escape = info["settings"]["join/escape"];
+	cout << 2 << endl;
 	QQforward = info["settings"]["QQForward"];
 	MCforward = info["settings"]["MCForward"];
 	whitelistAdd = info["settings"]["WhitelistAdd"];
