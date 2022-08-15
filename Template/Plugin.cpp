@@ -152,7 +152,7 @@ inline void listPlayer()
 inline int customMsg(string message,string username,string cmdMsg,string userid)
 {
 	fstream messageFile;
-	messageFile.open(".\\plugins\\LL_Robot\\Message.json");
+	messageFile.open(".\\plugins\\X-Robot\\Message.json");
 	json customMessage;
 	messageFile >> customMessage;
 	int num = 0;
@@ -542,7 +542,7 @@ int PluginInit()
 	//信息文件的读取
 	json info;
 	fstream infoFile;
-	infoFile.open(".\\plugins\\LL_Robot\\RobotInfo.json");
+	infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
 	infoFile >> info;
 	GROUPIDINT = info["QQ_group_id"];
 	GROUPID = std::to_string(GROUPIDINT);
@@ -563,14 +563,14 @@ int PluginInit()
 
 	//绑定名单的读取和写入
 	fstream BindIDFile;
-	BindIDFile.open(".\\plugins\\LL_Robot\\BindID.json");
+	BindIDFile.open(".\\plugins\\X-Robot\\BindID.json");
 	BindIDFile >> BindID;
 	BindIDFile.close();
 
 
 	//op权限名单的读取和写入
 	fstream OPFile;
-	OPFile.open(".\\plugins\\LL_Robot\\op.json");
+	OPFile.open(".\\plugins\\X-Robot\\op.json");
 	OPFile >> op;
 
 
