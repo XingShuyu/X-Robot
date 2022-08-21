@@ -60,6 +60,7 @@ jobs:
         mkdir D:/out/sdk/Header
         mkdir D:/out/plugins/X-Robot/X-Robot
         mkdir D:/out/plugins/X-Robot/Manager
+        mkdir D:/out/plugins/X-Robot/X-Robot/go-cqhttp
     
     - name: Copy Out Files
       working-directory: ${{env.GITHUB_WORKSPACE}}
@@ -67,7 +68,7 @@ jobs:
         cp x64/Release/*.dll D:/out/plugins/X-Robot
         cp x64/Release/*.lib D:/out/sdk/Lib
         cp x64/Release/*.pdb D:/out/plugins/X-Robot
-        cp go-cqhttp/ D:/out/plugins/X-Robot/X-Robot
+        cp go-cqhttp/* D:/out/plugins/X-Robot/X-Robot/go-cqhttp
         cp x64/Release/*.exe D:/out/plugins/X-Robot/Manager
         cp Management/yaml-cpp/Lib/*.dll D:/out/plugins/X-Robot/Manager
         cp Json/*.json D:/out/plugins/X-Robot/X-Robot
