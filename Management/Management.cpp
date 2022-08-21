@@ -10,18 +10,22 @@ using namespace YAML;
 int main()
 {
     std::cout << "Config go-cqhttp\n";
-    int QQ;
+    string QQ;
     string password;
     cout << "QQ:\n";
     cin >> QQ;
     cout << "password:\n";
     cin >> password;
-    Node config = LoadFile("plugins\\X-Robot\\go-cqhttp\\config.yml");
+    password = "\'" + password + "\'";
+    Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+    cout << 1;
     config["account"]["uin"] = QQ;
     config["account"]["password"] = password;
+    cout << 2;
     ofstream fout;
-    fout.open("plugins\\X-Robot\\go-cqhttp\\config.yml");
-
+    fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+    fout << config;
+    cin >> QQ;
 }
 
 

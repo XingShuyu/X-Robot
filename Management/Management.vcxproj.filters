@@ -20,7 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\Template\yaml-cpp.lib">
+    <Library Include="yaml-cpp\Lib\yaml-cpp.lib">
       <Filter>资源文件</Filter>
     </Library>
   </ItemGroup>
