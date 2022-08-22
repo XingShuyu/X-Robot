@@ -92,6 +92,12 @@ servers:
   #- ws-reverse: # 反向 Websocket
   #- pprof: #性能分析服务器
 
+  # 正向WS设置
+  - ws:
+      # 正向WS服务器监听地址
+      address: 127.0.0.1:6700
+      middlewares:
+        <<: *default # 引用默认中间件
 
   #HTTP设置
   - http: # HTTP 通信设置
