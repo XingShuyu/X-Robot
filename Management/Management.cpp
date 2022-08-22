@@ -195,7 +195,7 @@ reload:WSADATA wsaData;
 				//消息处理
 				if (groupid == GROUPIDINT)
 				{
-					cout << message;
+					cout << message << endl;
 				}
 				string sedbuf = "HTTP/1.1 200 OK\r\n";
 				// Echo the buffer back to the sender
@@ -268,7 +268,20 @@ int main()
 	infoFile >> info;
 	GROUPIDINT = info["QQ_group_id"];
 	serverName = info["serverName"];
-	port = info["port"];
+	port = info["manager_port"];
+	bool aleadyConfig = info["manager"]["cqhttp_config"];
+	infoFile.close();
+	if (aleadyConfig == false)
+	{
+		config();
+		infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
+		infoFile >> info;
+		info["manager"]["cqhttp_config"] = true;
+		infoFile << info;
+		infoFile.close();
+	}
+	system("cd .\\plugins\\X-Robot\\go-cqhttp\\");
+	system("start cmd /K .\\plugins\\X-Robot\\go-cqhttp\\go-cqhttp.exe");
 	websocketsrv();
 }
 

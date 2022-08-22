@@ -554,7 +554,7 @@ int PluginInit()
 	QQforward = info["settings"]["QQForward"];
 	MCforward = info["settings"]["MCForward"];
 	whitelistAdd = info["settings"]["WhitelistAdd"];
-
+	infoFile.close();
 
 	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
 

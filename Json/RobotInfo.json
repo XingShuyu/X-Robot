@@ -2,6 +2,7 @@
 	"QQ_group_id": 722047078,
 	"serverName": "Your Server Name",
 	"port": "5701",
+	"manager_port": "5702",
 	"settings": {
 		"join/escape": true,
 		"with_chat": false,
