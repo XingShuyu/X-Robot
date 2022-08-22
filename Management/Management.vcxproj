@@ -145,6 +145,10 @@
   <ItemGroup>
     <Library Include="yaml-cpp\Lib\yaml-cpp.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="httplib.h" />
+    <ClInclude Include="nlohmann\json.hpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

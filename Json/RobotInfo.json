@@ -8,5 +8,9 @@
 		"QQForward": true,
 		"MCForward": true,
 		"WhitelistAdd": true
+	},
+	"manager": {
+		"cqhttp_config": false,
+		"backup_interval": 24
 	}
 }

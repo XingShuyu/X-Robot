@@ -548,11 +548,9 @@ int PluginInit()
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
 	port = info["port"];
-	cout << 1 << endl;
 
 	with_chat = info["settings"]["with_chat"];
 	join_escape = info["settings"]["join/escape"];
-	cout << 2 << endl;
 	QQforward = info["settings"]["QQForward"];
 	MCforward = info["settings"]["MCForward"];
 	whitelistAdd = info["settings"]["WhitelistAdd"];
