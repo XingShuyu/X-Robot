@@ -24,12 +24,4 @@
       <Filter>资源文件</Filter>
     </Library>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="httplib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Nlohmann\json.hpp">
-      <Filter>头文件</Filter>
-    </ClInclude>
-  </ItemGroup>
 </Project>
