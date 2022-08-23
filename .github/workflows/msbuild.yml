@@ -58,20 +58,20 @@ jobs:
         mkdir D:/out/sdk
         mkdir D:/out/sdk/Lib
         mkdir D:/out/sdk/Header
-        mkdir D:/out/plugins/X-Robot/X-Robot
-        mkdir D:/out/plugins/X-Robot/X-Robot/go-cqhttp
+        mkdir D:/out/Plugins/plugins/X-Robot/
+        mkdir D:/out/Plugins/plugins/X-Robot/go-cqhttp
     
     - name: Copy Out Files
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        cp x64/Release/*.dll D:/out/plugins/X-Robot
+        cp x64/Release/*.dll D:/out/Plugins/plugins
         cp x64/Release/*.lib D:/out/sdk/Lib
-        cp x64/Release/*.pdb D:/out/plugins/X-Robot
-        cp go-cqhttp/* D:/out/plugins/X-Robot/X-Robot/go-cqhttp
-        cp x64/Release/*.exe D:/out/
-        cp Management/yaml-cpp/Lib/*.dll D:/out/
-        cp Json/*.json D:/out/plugins/X-Robot/X-Robot
-        cp Management/*.bat D:/out?
+        cp x64/Release/*.pdb D:/out/Plugins/plugins
+        cp go-cqhttp/* D:/out/Plugins/plugins/X-Robot/go-cqhttp
+        cp x64/Release/*.exe D:/out/Plugins
+        cp Management/yaml-cpp/Lib/*.dll D:/out/Plugins
+        cp Json/*.json D:/out/Plugins/plugins/X-Robot
+        cp Management/*.bat D:/out/Plugins
         ls
       shell: bash
 
@@ -79,7 +79,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: plugins
-        path: D:/out/plugins/X-Robot
+        path: D:/out/Plugins
 
     - name: Upload SDK
       uses: actions/upload-artifact@v1.0.0
@@ -90,7 +90,7 @@ jobs:
     - name: Compress to zip
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        7z a D:/out/X-Robot.zip D:/out/
+        7z a D:/out/X-Robot.zip D:/out/Plugins
         7z a D:/out/SDK.zip D:/out/sdk
       shell: bash
 
