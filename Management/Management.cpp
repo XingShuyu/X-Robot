@@ -195,7 +195,10 @@ reload:WSADATA wsaData;
 				//消息处理
 				if (groupid == GROUPIDINT)
 				{
-					cout << message << endl;
+					if (message == "开服" && role != "member") 
+					{
+						system("start cmd /k \"bedrock_server_mod.exe\"");
+					}
 				}
 				string sedbuf = "HTTP/1.1 200 OK\r\n";
 				// Echo the buffer back to the sender
@@ -248,7 +251,6 @@ int config()
     cin >> QQ;
     cout << "password:\n";
     cin >> password;
-    password = "\'" + password + "\'";
     Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
     cout << 1;
     config["account"]["uin"] = QQ;
@@ -258,6 +260,11 @@ int config()
     fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
     fout << config;
     cin >> QQ;
+}
+int startCq()
+{
+	system(".\\start_go-cqhttp.bat");
+	return 0;
 }
 
 int main()
@@ -273,15 +280,15 @@ int main()
 	infoFile.close();
 	if (aleadyConfig == false)
 	{
+		ofstream infoFileOut;
 		config();
-		infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
-		infoFile >> info;
+		infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
 		info["manager"]["cqhttp_config"] = true;
-		infoFile << info;
-		infoFile.close();
+		infoFileOut << std::setw(4) << info << std::endl;
+		infoFileOut.close();
 	}
-	system("cd .\\plugins\\X-Robot\\go-cqhttp\\");
-	system("start cmd /K .\\plugins\\X-Robot\\go-cqhttp\\go-cqhttp.exe");
+	thread tl(startCq);
+	tl.detach();
 	websocketsrv();
 }
 
