@@ -59,7 +59,6 @@ jobs:
         mkdir D:/out/sdk/Lib
         mkdir D:/out/sdk/Header
         mkdir D:/out/plugins/X-Robot/X-Robot
-        mkdir D:/out/plugins/X-Robot/Manager
         mkdir D:/out/plugins/X-Robot/X-Robot/go-cqhttp
     
     - name: Copy Out Files
@@ -69,9 +68,10 @@ jobs:
         cp x64/Release/*.lib D:/out/sdk/Lib
         cp x64/Release/*.pdb D:/out/plugins/X-Robot
         cp go-cqhttp/* D:/out/plugins/X-Robot/X-Robot/go-cqhttp
-        cp x64/Release/*.exe D:/out/plugins/X-Robot/Manager
-        cp Management/yaml-cpp/Lib/*.dll D:/out/plugins/X-Robot/Manager
+        cp x64/Release/*.exe D:/out/
+        cp Management/yaml-cpp/Lib/*.dll D:/out/
         cp Json/*.json D:/out/plugins/X-Robot/X-Robot
+        cq Management/*.bat D:/out?
         ls
       shell: bash
 
@@ -90,7 +90,7 @@ jobs:
     - name: Compress to zip
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        7z a D:/out/plugins/X-Robot.zip D:/out/plugins/X-Robot
+        7z a D:/out/X-Robot.zip D:/out/
         7z a D:/out/SDK.zip D:/out/sdk
       shell: bash
 
@@ -99,7 +99,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          D:/out/plugins/X-Robot.zip
+          D:/out/X-Robot.zip
           D:/out/SDK.zip
       env:
           GITHUB_REPOSITORY: ${{env.GITHUB_ACTION_REPOSITORY}}
