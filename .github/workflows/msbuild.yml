@@ -71,7 +71,7 @@ jobs:
         cp x64/Release/*.exe D:/out/
         cp Management/yaml-cpp/Lib/*.dll D:/out/
         cp Json/*.json D:/out/plugins/X-Robot/X-Robot
-        cq Management/*.bat D:/out?
+        cp Management/*.bat D:/out?
         ls
       shell: bash
 
