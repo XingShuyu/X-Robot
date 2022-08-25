@@ -71,6 +71,15 @@ void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
 int GROUPIDINT;
 string port;
 string serverName;
+int backupTime;
+
+
+int autoBackup()
+{
+	Backup:Sleep(backupTime * 3600 * 1000);
+	system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
+	goto Backup;
+}
 
 
 inline int websocketsrv()
@@ -199,6 +208,18 @@ reload:WSADATA wsaData;
 					{
 						system("start cmd /k \"bedrock_server_mod.exe\"");
 					}
+					if (message == "backup")
+					{
+						system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
+						msgAPI msgSend;
+						msgSend.groupMsg(to_string(GROUPIDINT), "正在进行备份");
+					}
+					if (message == "recovery")
+					{
+						system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
+						msgAPI msgSend;
+						msgSend.groupMsg(to_string(GROUPIDINT), "正在进行回档");
+					}
 				}
 				string sedbuf = "HTTP/1.1 200 OK\r\n";
 				// Echo the buffer back to the sender
@@ -244,7 +265,7 @@ reload:WSADATA wsaData;
 
 int config()
 {
-    std::cout << "Config go-cqhttp\n";
+    std::cout << "配置 go-cqhttp\n";
     string QQ;
     string password;
     cout << "QQ:\n";
@@ -252,14 +273,12 @@ int config()
     cout << "password:\n";
     cin >> password;
     Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
-    cout << 1;
+    cout << "CQ已被自动配置完成";
     config["account"]["uin"] = QQ;
     config["account"]["password"] = password;
-    cout << 2;
     ofstream fout;
     fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
     fout << config;
-    cin >> QQ;
 }
 int startCq()
 {
@@ -277,6 +296,7 @@ int main()
 	serverName = info["serverName"];
 	port = info["manager_port"];
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
+	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();
 	if (aleadyConfig == false)
 	{
@@ -289,6 +309,8 @@ int main()
 	}
 	thread tl(startCq);
 	tl.detach();
+	thread backupTl(autoBackup);
+	backupTl.detach();
 	websocketsrv();
 }
 
