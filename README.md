@@ -1,5 +1,5 @@
-# Robot_LiteLoader
-一个为BDS定制的LL机器人
+# X-Robot
+一个为BDS定制的轻量QQ机器人
 
 >功能列表
 
@@ -10,7 +10,9 @@
 5. QQ新群员自动增加白名单，群员退群取消白名单,"重置个人绑定"来重置,"查询绑定"来查询
 6. 发送"查服"来获取服务器信息
 7. 发送"菜单"获取指令列表
-8. 自定义指令
+8. 开服，关服支持
+9. 自动备份存档，QQ群"backup""recovery"来备份和回档
+10. 自定义指令
 
 >选择我们有哪些好处?
 
@@ -28,39 +30,10 @@
 
 >安装指南
 
->>视频指南
 
-https://moecloud.cn/api/v3/source/j5xlBuQSGsZo_qy_DAHPrJo3CE3JXuRL1MYoerZaZDE=:0/734787/Windows%20Server%202016-%20VMware%20Workstation%2016%20Player%20%28%E4%BB%85%E7%94%A8%E4%BA%8E%E9%9D%9E%E5%95%86%E4%B8%9A%E7%94%A8%E9%80%94%29%202022-07-09%2008-46-02.mp4
-
->>文字指南
-
-1. 在 [Release](https://github.com/XingShuyu/X-Robot/releases)中下载LL_Robot.zip，并解压在BDS\plugins文件夹中，dll要在plugins中，json要在LL_Robot文件夹
-2. 在[[Mrs4s/go-cqhttp]](https://github.com/Mrs4s/go-cqhttp)中下载go-cqhttp，并开启http通信
-3. 打开go-cqhttp配置文件，http通信设置为
-```
-  - http: # HTTP 通信设置
-      address: 0.0.0.0:5700 # HTTP监听地址
-      timeout: 5      # 反向 HTTP 超时时间, 单位秒，<5 时将被忽略
-      long-polling:   # 长轮询拓展
-        enabled: false       # 是否开启
-        max-queue-size: 2000 # 消息队列大小，0 表示不限制队列大小，谨慎使用
-      middlewares:
-        <<: *default # 引用默认中间件
-      post:           # 反向HTTP POST地址列表
-      #- url: ''                # 地址
-      #  secret: ''             # 密钥
-      #  max-retries: 3         # 最大重试，0 时禁用
-      #  retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
-      - url: http://127.0.0.1:5701/ # 地址
-        secret: ''                  # 密钥
-        max-retries: 0             # 最大重试，0 时禁用
-        retries-interval: 0      # 重试时间，单位毫秒，0 时立即
-```
-4. 启动go-cqhttp
-5. 打开BDS根目录下的RobotInfo.json
-6. 将"QQ_group_id"的值改为要转发的QQ群号，将"serverName"的值改成你自己的服务器名
-7. 调整控制台编码为UTF-8
-8. 启动BDS见到“Websocket Loaded”则已启动完成，QQ群发送“服务器已启动”
+1. 在 [Release](https://github.com/XingShuyu/X-Robot/releases)中下载X-Robot.zip，并解压在BDS根目录中，exe和bedrock_server_mod.exe在同一目录
+2. 启动Manager.exe，第一次启动会要求配置，按顺序输入机器人QQ号，QQ密码，QQ群号，服务器名称即可配置完成。机器人已启动
+3. 在服务器配置好后，启动BDS，或者在QQ群里面发“开服”即可启动服务器。看到“服务器已启动”即开服成功。
 
 >赞助
 不要求强制赞助，但是你的赞助可以帮助我更好的发展
@@ -122,20 +95,21 @@ op权限就是谁能执行上文的sudo指令
         secret: ''             # 密钥
         max-retries: 3         # 最大重试，0 时禁用
         retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
-      - url: http://127.0.0.1:5702/ # 地址
+      - url: http://127.0.0.1:5703/ # 地址
         secret: ''                  # 密钥
         max-retries: 0             # 最大重试，0 时禁用
         retries-interval: 0      # 重试时间，单位毫秒，0 时立即
 ```
-其中，5702是你的端口号，可以自行更改，但要与下文的端口一致
+其中，5703是你的端口号，可以自行更改，不能是5702，但要与下文的端口一致
 3. 打开第二个服务器的/BDS/plugins/LL_Robot/RobotInfo.json文件
-4. 将"5701"改为"5702"这里端口可以自己更改，与上文一致即可
+4. 将"5701"改为"5703"这里端口可以自己更改，与上文一致即可
 5. 将serverName改为第二个服务器的名字
 6. 保存，启动CQ和两个服务器
 
 >使用第三方软件列表
 
 * [[Mrs4s/go-cqhttp]](https://github.com/Mrs4s/go-cqhttp)
+* [[jbeder/yaml-cpp]](https://github.com/jbeder/yaml-cpp)
 * [[yhirose/cpp-httplib]](https://github.com/yhirose/cpp-httplib)
 * [[nlohmann/json]](https://github.com/nlohmann/json)
 
