@@ -471,7 +471,8 @@ inline int websocketsrv()
 					if (notice_type == "group_decrease")
 					{
 						msgAPI sendmsg;
-						string XboxName = BindID[to_string(userid)];
+						string XboxName;
+						try                                                                                                                                 {                                                                                                                                           XboxName = BindID[to_string(userid)];                                                                                       }                                                                                                                                   catch (...)                                                                                                                         {                                                                                                                                           XboxName = "未绑定";                                                                                                        }
 						string msg = XboxName + "离开了我们%0A已自动删除白名单";
 						sendmsg.groupMsg(GROUPID, msg);
 						msg = "whitelist remove " + XboxName;
@@ -579,8 +580,14 @@ int PluginInit()
 	LL::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2));//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	thread tl(websocketsrv);
-	tl.detach();
-
+reboot:try
+	{
+		tl.detach();
+	}
+	catch(...)
+	{
+		goto reBoot;
+	{
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)
 		{
 			msgAPI msgSend;
