@@ -587,7 +587,7 @@ reboot:try
 	catch(...)
 	{
 		goto reBoot;
-	{
+	}
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)
 		{
 			msgAPI msgSend;
