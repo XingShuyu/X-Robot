@@ -206,7 +206,7 @@ reload:WSADATA wsaData;
 				{
 					if (message == "开服" && role != "member") 
 					{
-						system("start \"bedrock_server_mod.exe\"");
+						system("start bedrock_server_mod.exe");
 					}
 					if (message == "backup")
 					{

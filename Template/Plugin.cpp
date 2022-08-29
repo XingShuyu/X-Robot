@@ -472,7 +472,8 @@ inline int websocketsrv()
 					{
 						msgAPI sendmsg;
 						string XboxName;
-						try                                                                                                                                 {                                                                                                                                           XboxName = BindID[to_string(userid)];                                                                                       }                                                                                                                                   catch (...)                                                                                                                         {                                                                                                                                           XboxName = "未绑定";                                                                                                        }
+						try { XboxName = BindID[to_string(userid)]; }
+						catch (...) { XboxName = "未绑定"; }
 						string msg = XboxName + "离开了我们%0A已自动删除白名单";
 						sendmsg.groupMsg(GROUPID, msg);
 						msg = "whitelist remove " + XboxName;
