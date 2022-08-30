@@ -49,7 +49,7 @@ jobs:
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        chcp 65001
+        echo $LANG
         MSBuild.exe ./X-Robot.sln -property:Configuration=Release
       shell: bash
     
