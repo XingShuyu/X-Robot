@@ -206,6 +206,7 @@ reload:WSADATA wsaData;
 				{
 					if (message == "开服" && role != "member") 
 					{
+						Sleep(300);
 						system("start bedrock_server_mod.exe");
 					}
 					if (message == "backup")
@@ -278,7 +279,8 @@ int config()
     config["account"]["password"] = password;
     ofstream fout;
     fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
-    fout << config;
+	fout << config;
+	return 0;
 }
 int startCq()
 {

@@ -239,16 +239,16 @@ inline int addNewPlayer(string &message, int &groupId, int &userid)
 			{
 				msg = "你的XboxID为：" + messageOLD + " %0A正在为你绑定...";
 				sendMsg.groupMsg(GROUPID, msg);
-				msg = "whitelist add \"" + messageOLD + "\"";
-				Level::runcmd(msg);
-				BindID[adderId] = messageOLD;
-				ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
-				a << std::setw(4) << BindID << std::endl;
 				if (oldId != "")
 				{
 					msg = "whitelist remove " + oldId;
 					Level::runcmd(msg);
 				}
+				msg = "whitelist add \"" + messageOLD + "\"";
+				Level::runcmd(msg);
+				BindID[adderId] = messageOLD;
+				ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
+				a << std::setw(4) << BindID << std::endl;
 				break;
 			}
 			else
@@ -460,7 +460,10 @@ inline int websocketsrv()
 					{
 						Level::runcmd("stop");
 					}
-
+					if (message == "开服" && role != "member")
+					{
+						Level::runcmd("stop");
+					}
 
 					//ID与白名单相关
 					if ((notice_type == "group_increase" || message == "重置个人绑定") && whitelistAdd == true)
