@@ -3,18 +3,19 @@
 #endif
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
-#include "pch.h"
-#include <EventAPI.h>
-#include <LoggerAPI.h>
-#include <MC/Level.hpp>
-#include <MC/BlockInstance.hpp>
-#include <MC/Block.hpp>
-#include <MC/BlockSource.hpp>
-#include <MC/Actor.hpp>
-#include <MC/Player.hpp>
-#include <MC/ItemStack.hpp>
-#include <LLAPI.h>
-#include <third-party/Nlohmann/json.hpp>
+#include "httplib.h"
+#include "version.h"
+#include <llapi/EventAPI.h>
+#include <llapi/LoggerAPI.h>
+#include <llapi/mc/Level.hpp>
+#include <llapi/mc/BlockInstance.hpp>
+#include <llapi/mc/Block.hpp>
+#include <llapi/mc/BlockSource.hpp>
+#include <llapi/mc/Actor.hpp>
+#include <llapi/mc/Player.hpp>
+#include <llapi/mc/ItemStack.hpp>
+#include <llapi/LLAPI.h>
+#include <Nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
 #include <windows.h>
@@ -23,7 +24,7 @@
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <algorithm>
-#include "httplib.h"
+
 #include "SysInfo.h"
 
 #pragma comment(lib, "Ws2_32.lib")
