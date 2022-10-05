@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "X-Robot", "Template\Template.vcxproj", "{ABEB5558-C92F-473E-8BDF-90F58BD3811C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Management", "Management\Management.vcxproj", "{63C0A129-79BC-4BA5-925B-EAC5CF8DAABB}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Manager", "Management\Management.vcxproj", "{63C0A129-79BC-4BA5-925B-EAC5CF8DAABB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

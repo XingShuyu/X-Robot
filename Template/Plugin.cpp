@@ -1,12 +1,22 @@
+/**
+ * @file plugin.cpp
+ * @brief The main file of the plugin
+ */
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #define CPPHTTPLIB_OPENSSL_SUPPORT
+#pragma comment(lib, "libssl-3-x64.lib")
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "crypt32.lib")
+#pragma comment(lib, "libcrypto-3-x64.lib")
 
+#include <openssl/ssl3.h>
 #include "httplib.h"
-#include "version.h"
+#include <llapi/ServerAPI.h>
 #include <llapi/EventAPI.h>
 #include <llapi/LoggerAPI.h>
+#include "version.h"
 #include <llapi/mc/Level.hpp>
 #include <llapi/mc/BlockInstance.hpp>
 #include <llapi/mc/Block.hpp>
@@ -26,9 +36,10 @@
 #include <algorithm>
 
 #include "SysInfo.h"
+#include <regex>
 
-#pragma comment(lib, "Ws2_32.lib")
 
+using namespace nlohmann;
 int GROUPIDINT = 452675761;
 string GROUPID = std::to_string(GROUPIDINT);//QQ群号
 string serverName = "服务器";//服务器名称
@@ -37,11 +48,34 @@ json op;//op鉴定权限
 string port;//服务器端口
 bool with_chat,join_escape,QQforward,MCforward,whitelistAdd;//配置选择
 string cmdMsg;//控制台消息
+string BindCheckId="";
 
 
 using namespace std;
 
 Logger logger("robot");
+
+
+
+//原来在dllmain中的版本检查
+void CheckProtocolVersion()
+{
+
+#ifdef TARGET_BDS_PROTOCOL_VERSION
+
+	auto current_protocol = ll::getServerProtocolVersion();
+	if (TARGET_BDS_PROTOCOL_VERSION != current_protocol)
+	{
+		logger.warn("Protocol version mismatched! Target version: {}. Current version: {}.",
+			TARGET_BDS_PROTOCOL_VERSION, current_protocol);
+		logger.warn("This may result in crash. Please switch to the version matching the BDS version!");
+	}
+
+#endif // TARGET_BDS_PROTOCOL_VERSION
+}
+
+
+
 
 
 //go-cqhttp的API封装
@@ -209,59 +243,6 @@ inline int customMsg(string message,string username,string cmdMsg,string userid)
 		num++;
 	}
 }
-inline int addNewPlayer(string &message, int &groupId, int &userid)
-{
-	msgAPI sendMsg;
-	string adderId = to_string(userid);
-	string msg;
-	string oldId = "";
-	try
-	{
-		oldId = BindID[adderId];
-		msg = "你好,[CQ:at,qq=" + adderId + "],你以前的id是: " + oldId + "更改将会删除旧的白名单，若确定更改，请告诉我你的XboxID";
-		sendMsg.groupMsg(GROUPID, msg);
-
-	}
-	catch(...)
-	{
-		msg = "欢迎新成员[CQ:at,qq=" + to_string(userid) + "],让我们开始一些基础设置吧";
-		sendMsg.groupMsg(GROUPID, msg);
-		sendMsg.groupMsg(GROUPID, "现在，请发送你的XboxID，即你的游戏名，我们将为你绑定白名单。");
-	}
-
-	userid = 0;
-	while (1)
-	{
-		if (to_string(userid) == adderId)
-		{
-			string messageOLD = message;
-			cout << messageOLD << endl;
-			if (messageOLD.find("CQ:") == messageOLD.npos)
-			{
-				msg = "你的XboxID为：" + messageOLD + " %0A正在为你绑定...";
-				sendMsg.groupMsg(GROUPID, msg);
-				if (oldId != "")
-				{
-					msg = "whitelist remove " + oldId;
-					Level::runcmd(msg);
-				}
-				msg = "whitelist add \"" + messageOLD + "\"";
-				Level::runcmd(msg);
-				BindID[adderId] = messageOLD;
-				ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
-				a << std::setw(4) << BindID << std::endl;
-				break;
-			}
-			else
-			{
-				sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
-				break;
-			}
-		}
-	}
-
-
-}
 
 inline int websocketsrv()
 {
@@ -355,7 +336,7 @@ inline int websocketsrv()
 				catch (...) {}
 				string msgtype;
 				string message;
-				int userid=0;
+				string userid;
 				string username;
 				int groupid=0;
 				string role="member";
@@ -366,7 +347,7 @@ inline int websocketsrv()
 				catch (...){}
 				try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
 				catch (...) {}
-				try { userid = jm["user_id"]; }//userid为发送者QQ号，为int
+				try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为int
 				catch (...) {}
 				try 
 				{ 
@@ -406,7 +387,7 @@ inline int websocketsrv()
 						{
 							try
 							{
-								int playerOp = op[to_string(userid)];
+								int playerOp = op[userid];
 								message = message.substr(5, message.length());
 								Level::runcmd(message);
 							}
@@ -465,18 +446,68 @@ inline int websocketsrv()
 					{
 						Level::runcmd("stop");
 					}
+					if (message == "recovery" && role != "member")
+					{
+						Level::runcmd("stop");
+					}
 
 					//ID与白名单相关
+
+					if (userid == BindCheckId)
+					{
+						msgAPI sendMsg;
+						string messageOLD = message;
+						cout << messageOLD << endl;
+						BindCheckId = "";
+						cout << BindCheckId;
+						if (messageOLD.find("CQ:") == messageOLD.npos)
+						{
+							string msg = "你的XboxID为：" + messageOLD + " %0A正在为你绑定...";
+							sendMsg.groupMsg(GROUPID, msg);
+
+							msg = "whitelist add \"" + messageOLD + "\"";
+							Level::runcmd(msg);
+							BindID[userid] = messageOLD;
+							ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
+							a << std::setw(4) << BindID << std::endl;
+							break;
+						}
+						else
+						{
+							sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
+							break;
+						}
+
+					}
+					cout << BindCheckId;
+
 					if ((notice_type == "group_increase" || message == "重置个人绑定") && whitelistAdd == true)
 					{
-						thread groupIncrease(addNewPlayer,ref(message),ref(groupid),ref(userid));
-						groupIncrease.detach();
+						msgAPI sendMsg;
+						string adderId = userid;
+						BindCheckId = userid;
+						string msg;
+						string oldId = "";
+						try
+						{
+							oldId = BindID[adderId];
+							msg = "你好,[CQ:at,qq=" + adderId + "],你以前的id是: " + oldId + "更改将会删除旧的白名单，请告诉我你的XboxID";
+							sendMsg.groupMsg(GROUPID, msg);
+							msg = "whitelist remove " + oldId;
+							Level::runcmd(msg);
+						}
+						catch (...)
+						{
+							msg = "欢迎新成员[CQ:at,qq=" + userid + "],让我们开始一些基础设置吧";
+							sendMsg.groupMsg(GROUPID, msg);
+							sendMsg.groupMsg(GROUPID, "现在，请发送你的XboxID，即你的游戏名，我们将为你绑定白名单。");
+						}
 					}
 					if (notice_type == "group_decrease")
 					{
 						msgAPI sendmsg;
 						string XboxName;
-						try { XboxName = BindID[to_string(userid)]; }
+						try { XboxName = BindID[userid]; }
 						catch (...) { XboxName = "未绑定"; }
 						string msg = XboxName + "离开了我们%0A已自动删除白名单";
 						sendmsg.groupMsg(GROUPID, msg);
@@ -489,20 +520,21 @@ inline int websocketsrv()
 						string XboxName;
 						try
 						{
-							XboxName = BindID[to_string(userid)];
+							XboxName = BindID[userid];
 						}
 						catch (...)
 						{
 							XboxName = "未绑定";
 						}
-						string msg = "玩家[CQ:at,qq=" + to_string(userid) + "],你的绑定是: " + XboxName;
+						string msg = "玩家[CQ:at,qq=" + userid + "],你的绑定是: " + XboxName;
 						sendMsg.groupMsg(GROUPID, msg);
 
 					}
 
+
 					//自定义指令集
 					//用新线程属于是性能换时间了
-					thread newthread(customMsg, message, username, cmdMsg, to_string(userid));
+					thread newthread(customMsg, message, username, cmdMsg, userid);
 					newthread.detach();
 
 					
@@ -547,8 +579,15 @@ inline int websocketsrv()
 
 	return 1;
 }
-int PluginInit()
+
+extern Logger loggerPlu;
+
+void PluginInit()
 {
+
+	CheckProtocolVersion();
+	Logger logger(PLUGIN_NAME);
+	logger.info("若见Websocket Loaded则机器人启动成功");
 	//信息文件的读取
 	json info;
 	fstream infoFile;
@@ -582,7 +621,7 @@ int PluginInit()
 	OPFile >> op;
 
 
-	LL::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2));//注册插件
+	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	thread tl(websocketsrv);
 reBoot:try
@@ -622,7 +661,6 @@ reBoot:try
 	if(join_escape)
 	{
 	
-		//这部分为在玩家离开时发送XXX离开了游戏，如要启用，可以删除头，尾的"/*","*/"随后编译
 		Event::PlayerLeftEvent::subscribe([](const Event::PlayerLeftEvent& ev)
 			{//
 				msgAPI msgSend;
@@ -633,7 +671,6 @@ reBoot:try
 			});
 	
 
-		//这部分为在玩家加入时发送XXX加入了游戏，如要启用，可以删除头，尾的"/*","*/"随后编译
 		Event::PlayerJoinEvent::subscribe([](const Event::PlayerJoinEvent& ev)
 			{//
 				msgAPI msgSend;

@@ -33,7 +33,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)SDK\Header\third-party;$(SolutionDir)SDK\Header;$(VC_IncludePath);$(WindowsSDK_IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)SDK\include;$(SolutionDir)SDK\Header;$(VC_IncludePath);$(WindowsSDK_IncludePath)$(SolutionDir)\Template\openssl</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -42,8 +42,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>httplib.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>NDEBUG;TEMPLATE_EXPORTS;WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_WINDOWS;_USRDLL;_AMD64_;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
@@ -57,6 +57,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);Ws2_32.lib;crypt32.lib;$(SolutionDir)SDK\lib\bedrock_server_api.lib;$(SolutionDir)SDK\lib\bedrock_server_var.lib;$(SolutionDir)SDK\lib\SymDBHelper.lib;$(SolutionDir)SDK\lib\LiteLoader.lib;$(SolutionDir)Template\openssl\libssl-3-x64.lib;$(SolutionDir)Template\openssl\libcrypto-3-x64.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Template\openssl;%(AdditionalLibraryDirectories);$(SolutionDir)SDK\lib</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
       <Command>if not exist $(SolutionDir)SDK\Lib\bedrock_server_api.lib goto process
@@ -85,13 +87,20 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
     <ClInclude Include="pch.h" />
     <ClInclude Include="httplib.h" />
     <ClInclude Include="SysInfo.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="pch.cpp" />
     <ClCompile Include="Plugin.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\SDK\lib\bedrock_server_api.lib" />
+    <Library Include="..\SDK\lib\bedrock_server_var.lib" />
+    <Library Include="..\SDK\lib\LiteLoader.lib" />
+    <Library Include="..\SDK\lib\SymDBHelper.lib" />
+    <Library Include="openssl\libcrypto-3-x64.lib" />
+    <Library Include="openssl\libssl-3-x64.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

@@ -27,16 +27,39 @@
     <ClInclude Include="httplib.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="version.h">
+      <Filter>Source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="Plugin.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\SDK\lib\bedrock_server_api.lib">
+      <Filter>Resourse</Filter>
+    </Library>
+    <Library Include="..\SDK\lib\bedrock_server_var.lib">
+      <Filter>Resourse</Filter>
+    </Library>
+    <Library Include="..\SDK\lib\SymDBHelper.lib">
+      <Filter>Resourse</Filter>
+    </Library>
+    <Library Include="openssl\libcrypto-3-x64.lib">
+      <Filter>Resourse</Filter>
+    </Library>
+    <Library Include="openssl\libssl-3-x64.lib">
+      <Filter>Resourse</Filter>
+    </Library>
+    <Library Include="..\SDK\lib\LiteLoader.lib">
+      <Filter>Resourse</Filter>
+    </Library>
   </ItemGroup>
 </Project>

@@ -174,7 +174,7 @@ reload:WSADATA wsaData;
 				catch (...) {}
 				string msgtype;
 				string message;
-				int userid = 0;
+				string userid = "";
 				string username;
 				int groupid = 0;
 				string role = "member";
@@ -185,7 +185,7 @@ reload:WSADATA wsaData;
 				catch (...) {}
 				try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
 				catch (...) {}
-				try { userid = jm["user_id"]; }//userid为发送者QQ号，为int
+				try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为int
 				catch (...) {}
 				try
 				{
@@ -207,19 +207,21 @@ reload:WSADATA wsaData;
 					if (message == "开服" && role != "member") 
 					{
 						Sleep(300);
-						system("start bedrock_server_mod.exe");
+						system("start .\\BDS-Deamon.cmd");
 					}
-					if (message == "backup")
+					if (message == "backup" && role != "member")
 					{
 						system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
 						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), "正在进行备份");
+						msgSend.groupMsg(to_string(GROUPIDINT), "备份完成");
 					}
-					if (message == "recovery")
+					if (message == "recovery" && role != "member")
 					{
+						Sleep(500);
 						system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
 						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), "正在进行回档");
+						msgSend.groupMsg(to_string(GROUPIDINT), "回档完成,正在重启服务器");
+						system("start .\\BDS-Deamon.cmd");
 					}
 				}
 				string sedbuf = "HTTP/1.1 200 OK\r\n";
