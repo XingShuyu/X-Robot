@@ -207,6 +207,7 @@ reload:WSADATA wsaData;
 					if (message == "开服" && role != "member") 
 					{
 						Sleep(300);
+						cout << "正在开服" << endl;
 						system("start .\\BDS-Deamon.cmd");
 					}
 					if (message == "backup" && role != "member")
@@ -302,17 +303,20 @@ int main()
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
 	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();
-	if (aleadyConfig == false)
+	if (info["manager"]["multi_server"] == false)
 	{
-		ofstream infoFileOut;
-		config();
-		infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
-		info["manager"]["cqhttp_config"] = true;
-		infoFileOut << std::setw(4) << info << std::endl;
-		infoFileOut.close();
+		if (aleadyConfig == false)
+		{
+			ofstream infoFileOut;
+			config();
+			infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
+			info["manager"]["cqhttp_config"] = true;
+			infoFileOut << std::setw(4) << info << std::endl;
+			infoFileOut.close();
+		}
+		thread tl(startCq);
+		tl.detach();
 	}
-	thread tl(startCq);
-	tl.detach();
 	thread backupTl(autoBackup);
 	backupTl.detach();
 	websocketsrv();

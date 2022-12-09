@@ -9,6 +9,7 @@
 //#include <tlhelp32.h>
 #include <direct.h>
 #include <process.h>
+//#include <sysinfoapi.h>
 #else
 #include <sys/stat.h>
 #include <sys/sysinfo.h>
@@ -20,6 +21,14 @@
 inline int GetCurrentPid()
 {
     return _getpid();
+}
+
+inline int GetCpuNum()
+{
+    SYSTEM_INFO info;
+    GetSystemInfo(&info);
+    int cpu_num = info.dwNumberOfProcessors;
+    return cpu_num;
 }
 
 // get specific process cpu occupation ratio by pid
@@ -221,6 +230,7 @@ inline float GetMemoryUsage(int pid)
 
     // get process hanlde by pid
     HANDLE process = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+
     if (GetProcessMemoryInfo(process, &pmc, sizeof(pmc)))
     {
         mem = pmc.WorkingSetSize;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file plugin.cpp
  * @brief The main file of the plugin
  */
@@ -34,22 +34,23 @@
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <algorithm>
-
+#include <sysinfoapi.h>
 #include "SysInfo.h"
 #include <regex>
 
 
 using namespace nlohmann;
-int GROUPIDINT = 452675761;
+int GROUPIDINT = 452675761,messageTime = 60;
 string GROUPID = std::to_string(GROUPIDINT);//QQ群号
 string serverName = "服务器";//服务器名称
 json BindID;//绑定
 json op;//op鉴定权限
 string port;//服务器端口
-bool with_chat,join_escape,QQforward,MCforward,whitelistAdd;//配置选择
+bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand;//配置选择
 string cmdMsg;//控制台消息
 string BindCheckId="";
-
+DWORD Start;
+DWORD timeStart;
 
 using namespace std;
 
@@ -58,6 +59,7 @@ Logger logger("robot");
 
 
 //原来在dllmain中的版本检查
+
 void CheckProtocolVersion()
 {
 
@@ -75,6 +77,11 @@ void CheckProtocolVersion()
 }
 
 
+
+void startManager()
+{
+	system(".\\Manager.exe");
+}
 
 
 
@@ -183,7 +190,6 @@ inline void listPlayer()
 	msgAPI sendMsg;
 	sendMsg.groupMsg(GROUPID, msg);
 }
-
 inline int customMsg(string message,string username,string cmdMsg,string userid)
 {
 	fstream messageFile;
@@ -241,6 +247,20 @@ inline int customMsg(string message,string username,string cmdMsg,string userid)
 			}
 		}
 		num++;
+	}
+}
+
+inline bool timeChecker()
+{
+	DWORD nowTime = GetTickCount64();
+	if ((nowTime - timeStart) > (1000 * messageTime))
+	{
+		timeStart = GetTickCount64();
+		return true;
+	}
+	else
+	{
+		return false;
 	}
 }
 
@@ -313,7 +333,7 @@ inline int websocketsrv()
 			WSACleanup();
 			return 1;
 		}
-#define DEFAULT_BUFLEN 4096
+#define DEFAULT_BUFLEN 8192
 
 		char recvbuf[DEFAULT_BUFLEN];
 		int iResult, iSendResult;
@@ -367,14 +387,14 @@ inline int websocketsrv()
 				if (groupid == GROUPIDINT)
 				{
 					//常规指令集
-					if (message.find("sudo") == 0 && message.length() >= 7)
+					if (message.find("/") == 0 && message.length() >= 3)
 					{
 						//辨权
 						if (op["OP"] == 0)
 						{
 							if (role != "member")//QQ执行指令
 							{
-								message = message.substr(5, message.length());
+								message = message.substr(1, message.length());
 								Level::runcmd(message);
 							}
 							else if (role == "member")
@@ -406,37 +426,44 @@ inline int websocketsrv()
 						string cmd = "whitelist add \"" + message+"\"";
 						Level::runcmd(cmd);
 					}
-					if (message == "list")//玩家列表
+					if ((message == "list"&& listCommand == true) && (timeChecker() == true || role != "member"))//玩家列表
 					{
 						listPlayer();
 					}
-					if (message.find("chat") == 0 && message.length() >= 6 && with_chat == true && QQforward == true)
+					else if ((message == "查服"&&SrvInfoCommand==true)&&(timeChecker()==true||role!="member"))
 					{
-						message = message.substr(5, message.length());
+						msgAPI sendMsg;
+						int current_pid = GetCurrentPid();
+						float cpu_usage_ratio = GetCpuUsageRatio(current_pid);
+						MEMORYSTATUSEX statex;
+						statex.dwLength = sizeof(statex);
+						GlobalMemoryStatusEx(&statex);
+						DWORD End = GetTickCount64();
+						cpu_usage_ratio = cpu_usage_ratio * 100;
+						int cpu_usage = cpu_usage_ratio;
+						string msg = serverName+"服务器信息"+"%0A服务器版本:"+ ll::getBdsVersion()+"%0ABDS协议号:"+to_string(ll::getServerProtocolVersion())+"%0ALL版本号:"+ll::getLoaderVersionString() + " %0A进程PID: " + to_string(current_pid) + " %0ACPU使用率 : " + to_string(cpu_usage) +"%25%0ACPU核数:"+to_string(GetCpuNum()) + " %0A内存占用 : " + to_string(statex.dwMemoryLoad) + " %25%0A总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB%0A剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB%0A服务器启动时间:"+to_string((End-Start)/1000/60/60/24)+"天"+to_string((End - Start) / 1000 / 60 /60) + "小时" + to_string((End - Start) / 1000 / 60 ) + "分钟";
+						sendMsg.groupMsg(GROUPID, msg);
+						listPlayer();
+					}
+					else if (message == "菜单"&&(timeChecker() == true || role != "member"))
+					{
+						msgAPI sendMsg;
+						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中chat 发送消息到mc%0A4. QQ中管理员以上级别\"sudo 命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+						sendMsg.groupMsg(GROUPID, msg);
+					}
+					else if (timeChecker() == false&&(message=="菜单"||message=="查服"||message=="list"))
+					{
+						//msgAPI sendMsg;
+						//sendMsg.groupMsg(GROUPID, "太着急了，待会再试叭");
+					}
+					if (message.find("%") == 0 && message.length() >= 3 && with_chat == true && QQforward == true)
+					{
+						message = message.substr(1, message.length());
 						msgCut(message, username);
 					}
 					else if (with_chat == false && QQforward == true)
 					{
 						msgCut(message, username);
-					}
-					if (message == "查服")
-					{
-						msgAPI sendMsg;
-						int current_pid = GetCurrentPid();
-						float cpu_usage_ratio = GetCpuUsageRatio(current_pid);
-						float memory_usage = GetMemoryUsage(current_pid);
-						cpu_usage_ratio = cpu_usage_ratio * 100;
-						int cpu_usage = cpu_usage_ratio;
-						int memory_usageInt = memory_usage;
-						string msg = serverName+"服务器信息%0A进程PID: " + to_string(current_pid) + "%0ACPU使用率: " + to_string(cpu_usage) + "%25%0A内存占用: " + to_string(memory_usageInt) + "MB";
-						sendMsg.groupMsg(GROUPID, msg);
-						listPlayer();
-					}
-					if (message == "菜单")
-					{
-						msgAPI sendMsg;
-						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中chat 发送消息到mc%0A4. QQ中管理员以上级别\"sudo 命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
-						sendMsg.groupMsg(GROUPID, msg);
 					}
 					if (message == "关服" && role == "owner")
 					{
@@ -477,7 +504,7 @@ inline int websocketsrv()
 							sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
 							break;
 						}
-
+						 
 					}
 					cout << BindCheckId;
 
@@ -584,11 +611,15 @@ extern Logger loggerPlu;
 
 void PluginInit()
 {
-
 	CheckProtocolVersion();
 	Logger logger(PLUGIN_NAME);
 	logger.info("若见Websocket Loaded则机器人启动成功");
 	//信息文件的读取
+
+	thread st(startManager);
+	st.detach();
+
+
 	json info;
 	fstream infoFile;
 	infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
@@ -603,6 +634,9 @@ void PluginInit()
 	QQforward = info["settings"]["QQForward"];
 	MCforward = info["settings"]["MCForward"];
 	whitelistAdd = info["settings"]["WhitelistAdd"];
+	listCommand = info["settings"]["list"];
+	SrvInfoCommand = info["settings"]["SrvInfo"];
+	messageTime = info["settings"]["messageTime"];
 	infoFile.close();
 
 	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
@@ -636,6 +670,8 @@ reBoot:try
 		{
 			msgAPI msgSend;
 			msgSend.groupMsg(GROUPID, "服务器已启动");
+			Start = GetTickCount64();
+			timeStart = GetTickCount64();
 			return 0;
 		});
 	if(MCforward)
