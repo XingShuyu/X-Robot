@@ -34,14 +34,15 @@ jobs:
       shell: bash
 
     - name: Build Library
-      working-directory: ${{env.GITHUB_WORKSPACE}}
+      if: steps.cache-bds-lib.outputs.cache-hit != 'true'
+      working-directory: ${{ env.GITHUB_WORKSPACE }}
       run: |
-        cd SDK/Tools
-        mkdir ../LiteLoader
-        mkdir ../LiteLoader/Lib
-        ./LibraryBuilder.exe D:/BDS
-        mv ../LiteLoader/Lib/* ../Lib/
-      shell: bash
+        cd Tools
+        LibraryBuilder.exe Server
+        mkdir ..\LiteLoader\lib
+        move bedrock_server_api.lib ..\LiteLoader\lib
+        move bedrock_server_var.lib ..\LiteLoader\lib
+      shell: cmd
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
@@ -49,6 +50,7 @@ jobs:
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
+        chcp 65001
         export LC_ALL="zh_CN.UTF-8"
         export LANG="zh_CN.UTF-8"
         MSBuild.exe ./X-Robot.sln -property:Configuration=Release
