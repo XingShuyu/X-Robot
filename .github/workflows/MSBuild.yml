@@ -39,7 +39,9 @@ jobs:
         cd SDK/Tools
         mkdir ../LiteLoader
         mkdir ../LiteLoader/Lib
-        ./LibraryBuilder.exe D:/BDS
+        ./LibraryBuilder.exe D:/
+        mv bedrock_server_var.lib ../LiteLoader/Lib
+        mv bedrock_server_api.lib ../LiteLoader/Lib
       shell: bash
 
     - name: Add MSBuild to PATH
