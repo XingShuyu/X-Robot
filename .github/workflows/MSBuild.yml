@@ -39,7 +39,7 @@ jobs:
         cd SDK/Tools
         mkdir ../LiteLoader
         mkdir ../LiteLoader/Lib
-        ./LibraryBuilder.exe D:/
+        ./LibraryBuilder.exe D:/BDS
         mv bedrock_server_var.lib ../LiteLoader/Lib
         mv bedrock_server_api.lib ../LiteLoader/Lib
       shell: bash
