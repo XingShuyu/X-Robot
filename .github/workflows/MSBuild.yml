@@ -51,10 +51,8 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         chcp 65001
-        export LC_ALL="zh_CN.UTF-8"
-        export LANG="zh_CN.UTF-8"
         MSBuild.exe ./X-Robot.sln -property:Configuration=Release
-      shell: bash
+      shell: cmd
     
     - name: MkDirs
       working-directory: ${{env.GITHUB_WORKSPACE}}
