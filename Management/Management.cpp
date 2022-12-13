@@ -16,6 +16,8 @@
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 #include <stdio.h>
+#include <TlHelp32.h>
+
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -24,6 +26,9 @@
 using namespace std;
 using namespace YAML;
 using namespace nlohmann;
+
+DWORD timeStart = 0;
+int interval = 0;
 
 //go-cqhttp的API封装
 class msgAPI
@@ -73,6 +78,11 @@ string port;
 string serverName;
 int backupTime;
 
+
+void lunch()
+{
+	system(".\\BDS-Deamon.cmd");
+}
 
 int autoBackup()
 {
@@ -179,6 +189,7 @@ reload:WSADATA wsaData;
 				int groupid = 0;
 				string role = "member";
 				string notice_type;
+				string post_type;
 				try { msgtype = jm["message_type"]; }//msgtype为消息类型，具体见CQ-http：事件
 				catch (...) {}
 				try { message = jm["message"]; }//message为消息内容，为string
@@ -186,6 +197,8 @@ reload:WSADATA wsaData;
 				try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
 				catch (...) {}
 				try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为int
+				catch (...) {}
+				try { post_type = to_string(jm["post_type"]); }//post_type为消息类型号，为string
 				catch (...) {}
 				try
 				{
@@ -200,15 +213,19 @@ reload:WSADATA wsaData;
 				catch (...) {}
 				try { notice_type = jm["notice_type"]; }
 				catch (...) { notice_type = ""; }
-
 				//消息处理
+				if (post_type == "\"meta_event\"")
+				{
+					timeStart = GetTickCount64();
+				}
 				if (groupid == GROUPIDINT)
 				{
 					if (message == "开服" && role != "member") 
 					{
 						Sleep(300);
 						cout << "正在开服" << endl;
-						system("start .\\BDS-Deamon.cmd");
+						thread lunchSrv(lunch);
+						lunchSrv.detach();
 					}
 					if (message == "backup" && role != "member")
 					{
@@ -267,7 +284,7 @@ reload:WSADATA wsaData;
 }
 
 
-int config()
+int configCQ()
 {
     std::cout << "配置 go-cqhttp\n";
     string QQ;
@@ -280,6 +297,7 @@ int config()
     cout << "CQ已被自动配置完成";
     config["account"]["uin"] = QQ;
     config["account"]["password"] = password;
+
     ofstream fout;
     fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	fout << config;
@@ -291,10 +309,30 @@ int startCq()
 	return 0;
 }
 
+
+
+inline bool CQSelfChecker()//cq启动自检
+{
+a:Sleep(60000);
+	while ((GetTickCount64() - timeStart) <= 3000 * interval)
+	{
+		Sleep(1000);
+	}
+	cout << "CQ疑似异常，尝试启动CQ...." << endl;
+	system("tskill go-cqhttp");
+	thread tl(startCq);
+	tl.detach();
+	goto a;
+}
+
+
+
 int main()
 {
 	json info;
 	fstream infoFile;
+	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+	interval = config["heartbeat"]["interval"].as<int>();
 	infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
 	infoFile >> info;
 	GROUPIDINT = info["QQ_group_id"];
@@ -308,7 +346,7 @@ int main()
 		if (aleadyConfig == false)
 		{
 			ofstream infoFileOut;
-			config();
+			configCQ();
 			infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
 			info["manager"]["cqhttp_config"] = true;
 			infoFileOut << std::setw(4) << info << std::endl;
@@ -316,6 +354,8 @@ int main()
 		}
 		thread tl(startCq);
 		tl.detach();
+		thread Protect(CQSelfChecker);
+		Protect.detach();
 	}
 	thread backupTl(autoBackup);
 	backupTl.detach();

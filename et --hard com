@@ -1,0 +1,934 @@
+[33mcommit 7942ccdc2c8a4e7bd449ffb39f2ac3b856bb0067[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m)[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Dec 11 01:43:21 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 34fbf9a921705d5936d7fb1f5300d9b30cda5797[m
+Merge: 639dd9d 6445bb7
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Sat Dec 10 00:03:42 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 639dd9dfafa9466af766766ad9bfd13f06f7c4fc[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Fri Dec 9 23:48:46 2022 +0800
+
+    修改了一些小玩意，更家人性化，防止刷屏，查服更新
+
+[33mcommit 6445bb7cd138d097d7466af1ca9700b7d2cce340[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sat Nov 5 01:57:38 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 5030c927eadccdcbd3db7c5d33736c8ed3256fa0[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Oct 30 02:21:19 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit b619947a858032510635ee2edfdac7b900f5b39d[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Wed Oct 5 17:14:25 2022 +0800
+
+    Update README.md
+
+[33mcommit 6095329b2223c7a67b9189a97777aa69d366fa5a[m[33m ([m[1;33mtag: v1.0.7[m[33m)[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Wed Oct 5 16:45:51 2022 +0800
+
+    修补
+
+[33mcommit a59726999a1db80e72243c518d20e296ce33fd35[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Wed Oct 5 11:42:37 2022 +0800
+
+    更新SDK到545，添加崩服重启，修复QQ号显示不正常
+
+[33mcommit ff571385a097809736d34b93d77868a1d937080b[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sat Oct 1 02:40:04 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 95c2d0e05c835c1041c147ccefcdcfee2d8bbdac[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Mon Sep 26 02:28:57 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit f681598ab265325f04d9118420224f212936b6b6[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Sep 25 02:27:16 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 3d3213816584d26e3f2af85e3d7cf5553f90a32f[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Sep 23 02:27:55 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 3d7b2925fb0623b5dfb56a5026a64f06bbb6ad26[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Thu Sep 22 02:22:46 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 89e62ba13aaed3fa35cdb400b808c129d5f79902[m[33m ([m[1;33mtag: v1.0.6[m[33m)[m
+Merge: d709f6b 62a5aa0
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Sat Sep 10 22:32:43 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit d709f6bb4a08c35a58ca2f573407c516ad33b04f[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Sat Sep 10 22:31:23 2022 +0800
+
+    修bug
+
+[33mcommit 62a5aa06c3489394b1ef2dd9d02bbfd7f8129e39[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Sep 4 02:15:53 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 8c568a98040632de28ccdab004ce86238d692d79[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sat Sep 3 02:23:49 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 86424aaca0c3f1c3b6afb98053034e29e89c9123[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Sep 2 02:20:14 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit b1654fcdc4613df13003b2138fe691c0ba87db15[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Wed Aug 31 02:34:40 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 2691d5bb82fec73fda7524bcc1ee351192e6e5db[m[33m ([m[1;33mtag: v1.0.5[m[33m)[m
+Merge: b459d88 3f477c2
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Aug 30 15:48:48 2022 +0800
+
+    合并
+
+[33mcommit 3f477c22e8c408d4a81fc0aaca6554504d45f22b[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Tue Aug 30 10:22:49 2022 +0800
+
+    wish me
+
+[33mcommit 4b669339314b9d35580c5a8322c2f657565fa4a3[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 30 10:12:47 2022 +0800
+
+    Update MSBuild.yml
+
+[33mcommit dcca68602dc4a8ad58ebe2e0a6fb67aa7b33be70[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 30 09:48:01 2022 +0800
+
+    Update and rename Management.cpp to MSBuild.yml
+
+[33mcommit f512f0079f49f08089b0eb07b626f000fc4208eb[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 30 09:43:04 2022 +0800
+
+    Rename MSBuild.yml to Management.cpp
+
+[33mcommit c3a571d8f59a7326696c0979935e63e4b6b50297[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 30 09:42:22 2022 +0800
+
+    Rename ManagerBuild.yml to MSBuild.yml
+
+[33mcommit 0ecca76f090d16959cc8d6cf4767dea2dc2abf14[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 30 09:41:13 2022 +0800
+
+    Update ManagerBuild.yml
+
+[33mcommit 6e0b63dd1485e20dbe62b3a90ebce4bda9581106[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 30 09:40:22 2022 +0800
+
+    Update and rename msbuild.yml to ManagerBuild.yml
+
+[33mcommit b7104bd97bae2a8571d90ebac0411c457e286854[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Aug 29 20:06:06 2022 +0800
+
+    Rename managerbuild.yml to README.md
+
+[33mcommit 77c07b0393d1c87c6a5b769f81fe62f52fbbe0a3[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Aug 29 20:02:56 2022 +0800
+
+    Update managerbuild.yml
+
+[33mcommit b459d88b217eaf463bb39e6c668a060968f81cf0[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 29 12:18:54 2022 +0800
+
+    修复崩溃
+
+[33mcommit 4ed1ef2df80f2300364ec2241e803b2ef3081617[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Sun Aug 28 20:48:21 2022 +0800
+
+    debug version,don't download
+
+[33mcommit 6fe436784b5ed64e55afc0d72e445c242e13481b[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Sun Aug 28 20:23:13 2022 +0800
+
+    debug version,don't download
+
+[33mcommit 6222ebd41764b5354a5f99a08988c05f1c912132[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Sun Aug 28 20:19:32 2022 +0800
+
+    fix bug
+
+[33mcommit ce22e05edd7dbccef4d15bd5006fbaa1637c254c[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Sun Aug 28 13:31:54 2022 +0800
+
+    delete crash
+
+[33mcommit 0b7930a91609fa642c338fc7f4e371e7fa903b95[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Aug 26 16:45:24 2022 +0800
+
+    Update README.md
+
+[33mcommit f8765a10e3c0833fa55be7936bc16be74429b377[m
+Merge: 921bc37 a89a43a
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Thu Aug 25 12:59:36 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 921bc375914de9577b464cebe345e2673003a77f[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Thu Aug 25 12:58:16 2022 +0800
+
+    Yeah
+
+[33mcommit a89a43a9f717577a7758cb95a55ff0f69f0da8ea[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Wed Aug 24 02:09:27 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit ddc996407f32afccac816f68f33734d2f31be02e[m[33m ([m[1;33mtag: v1.0.4[m[33m)[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Aug 23 18:56:12 2022 +0800
+
+    a
+
+[33mcommit 85246b44792f7decb49b95a4bd20e197678862c3[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 23 18:14:01 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 2f5ea35d1b3fe4afe615c9ccfcee508264321027[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 23 15:33:04 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 646a0515a0d4d88c06099611fee9e1227b64ade3[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Aug 23 15:23:16 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 001cfb882b22849b931337abcc44d781f0e1e179[m
+Merge: 3e468a3 8859699
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Aug 23 10:58:31 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 3e468a33f1e5a0edb87645b5d099c2e1adb987ed[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Aug 23 10:58:21 2022 +0800
+
+    添加控制器
+
+[33mcommit 88596998655504b72d36dcc75dc3718b0eb86add[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Tue Aug 23 02:16:03 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 5715b9987f5329494a6535212627bebbeb975f37[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 22:17:24 2022 +0800
+
+    aa
+
+[33mcommit 10ee9abaccba88067e44fb47f89c74cb340c9b37[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 21:27:28 2022 +0800
+
+    寄
+
+[33mcommit bdc2faad8fafa4cfc49078a8c8c8237805528e73[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 18:57:31 2022 +0800
+
+    小记
+
+[33mcommit a10126c8110370f983569e804d9cd0aeecc72315[m
+Merge: 6640381 a0199f3
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 18:15:50 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit a0199f3a16dfaee2bed93d053fc3d4b1b5fdeaba[m
+Merge: ac94fa8 f77b77c
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Mon Aug 22 18:15:29 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 66403816b154815b926419e189889abec6614ab9[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 18:14:34 2022 +0800
+
+    Revert "fetch upstream SDK"
+    
+    This reverts commit bd19c995a91beffa160c6efd262c0cb54458baba.
+
+[33mcommit ac94fa89bc551f53ac1ad030e8ff7d9b31f9f579[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Mon Aug 22 18:12:52 2022 +0800
+
+    小记
+
+[33mcommit f3cab3084b14da6e3d8ecde70192d411672872fc[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 18:11:45 2022 +0800
+
+    Revert "XD"
+    
+    This reverts commit 69e1043aa1ea5e5529032bb990b53d63beba27c8.
+
+[33mcommit a3cdc7ba0705f35bfe7b0e3f493e33cc4dcf61bc[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 18:09:34 2022 +0800
+
+    Revert "临时保存"
+    
+    This reverts commit 76043da86710921ce48c3c389c1a666eebd7756b.
+
+[33mcommit f77b77c88e0912b07ed2f8d536b0197b984f05cf[m
+Merge: 1be1b22 51f6d7c
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 17:59:58 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 1be1b22c0103ff3ac5f7fd3fc9afb9564951c393[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Aug 22 17:59:55 2022 +0800
+
+    a
+
+[33mcommit 51f6d7c5de624a46722342a78ff6077cdc279fc4[m
+Merge: 76043da bd19c99
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Mon Aug 22 15:17:57 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 76043da86710921ce48c3c389c1a666eebd7756b[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Mon Aug 22 15:17:42 2022 +0800
+
+    临时保存
+
+[33mcommit bd19c995a91beffa160c6efd262c0cb54458baba[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Mon Aug 22 02:05:42 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 69e1043aa1ea5e5529032bb990b53d63beba27c8[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Sun Aug 21 22:30:13 2022 +0800
+
+    XD
+
+[33mcommit 5d45f5eb96c55e9a4a52f730fa01a13f3cbcc145[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sun Aug 21 21:39:13 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit c72736b4a04e7086d8f6788f6c8a30ac661acf39[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sun Aug 21 12:26:28 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 0df773d504d2eea507c84d5861fc66647e67d42d[m
+Merge: 0676623 a1d89b2
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Sun Aug 21 12:25:18 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit 0676623eaf41382bc5b9670b733d0224fafe6c6a[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Sun Aug 21 12:25:03 2022 +0800
+
+    重命名
+
+[33mcommit a1d89b22ba9ca4a67861d8ecd8a05f444d1b2897[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sun Aug 21 12:19:46 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 88aba27f2a09c9c4af1e2d85b139e95a7ba27ac7[m
+Merge: f40a6b2 165c5ad
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Sun Aug 21 12:03:17 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/X-Robot
+
+[33mcommit f40a6b200b6e30513a62c2c7fde3142503e5f8b7[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Sun Aug 21 12:02:33 2022 +0800
+
+    添加cq到本地
+
+[33mcommit 165c5adc94e78ba9ac4fd87e84bec7d939eb7080[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 21 02:01:51 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit ca724f698ea723f1e0a28e8ae9017da73a9659ec[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sat Aug 20 02:08:13 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit f43d8041ce738ad4e60709f76d429c42834947f7[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Aug 19 02:09:19 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit e02ab55447d36fb6d87188a3531f88b3f914f823[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Thu Aug 18 23:13:31 2022 +0800
+
+    加入中间件
+
+[33mcommit 9c3ad630670c88e2ddd745b8f024dfd3e9094f58[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Thu Aug 18 12:31:52 2022 +0800
+
+    Update workflow msbuild
+
+[33mcommit cc252616c14094c9fa7ce2e591fcf3e13cce0f6f[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Mon Aug 15 17:07:01 2022 +0800
+
+    rename
+
+[33mcommit 5b7ec096712a93cc4068107ee3435cd6b834e956[m
+Author: Shuyu Xing <ning1yan2jie3@163.com>
+Date:   Mon Aug 15 15:44:28 2022 +0800
+
+    修bug
+
+[33mcommit 850393e2f882d722f30ec7125a8d3015b60e4d0e[m
+Author: XingShuyu <ning1yan2jie3@163.com>
+Date:   Sun Aug 14 11:39:44 2022 +0800
+
+    Update Readme
+
+[33mcommit 4f24ed8dbc1c9a459a80dde41b46e0b84b957f71[m
+Merge: b47e606 e4be22d
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 14 11:00:36 2022 +0800
+
+    Merge branch 'master' of github.com:XingShuyu/X-Robot
+
+[33mcommit e4be22d3a1e7cf7e5cfd9429f6e504d6cc5754a2[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sun Aug 14 10:58:59 2022 +0800
+
+    Update README.md
+
+[33mcommit b47e6063d42de27c77e2bef68e14f4ff05ab3d23[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 14 10:57:38 2022 +0800
+
+    Fix My shit code
+
+[33mcommit cb010165e6e37c0eb351a92e9d02a211bca6dcef[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 14 10:49:23 2022 +0800
+
+    add config
+
+[33mcommit c4ab53a98063203789b0cce16cc95065e23211e2[m
+Merge: c5773c4 0ef7cb0
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 14 10:47:26 2022 +0800
+
+    Merge branch 'master' of github.com:XingShuyu/X-Robot
+
+[33mcommit c5773c462f8f3def90cb3d9dbdf7ffae744ddb76[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 14 10:44:54 2022 +0800
+
+    add white list Json config
+
+[33mcommit 0ef7cb0617e5809dc08526752e0dcd37334d9f56[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sun Aug 14 02:07:39 2022 +0000
+
+    fetch upstream SDK
+
+[33mcommit 122567e07f7092f428f4ace68f2b77c0b19c3ce2[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sat Aug 13 17:37:51 2022 +0800
+
+    config update
+
+[33mcommit 7b798061b5196e207b0d4a9a3935c613a2a4747a[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Sat Aug 13 12:57:45 2022 +0800
+
+    config update
+
+[33mcommit e1e342b0f0654e8c38dbfd2988e41fb3988027b1[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Aug 12 16:21:28 2022 +0800
+
+    nothing
+
+[33mcommit b4e2e380ccf3e33ecd9d9ebf8c876a871b8ef0a5[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Aug 12 16:15:59 2022 +0800
+
+    Nothing
+
+[33mcommit 89ab715efd5df1ff6970660251cd0490da436f69[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Aug 12 15:58:37 2022 +0800
+
+    OhNo
+
+[33mcommit 062b74bd99d4c594db2bbd629a23e4329f920eee[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Aug 12 15:47:10 2022 +0800
+
+    Update Template.vcxproj
+    
+    No
+
+[33mcommit 36ef7a6e4f90a749709f8a7149c1a3b7633109aa[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Aug 12 15:39:37 2022 +0800
+
+    UPdateSDK
+
+[33mcommit c09333f8b54c97748697f84667714d648ffbdc2e[m
+Author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+Date:   Fri Aug 12 15:05:25 2022 +0800
+
+    UpdateSDK
+
+[33mcommit 0ed831d38482ef3f0c35f370838b74b3f9e69640[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Aug 12 13:24:21 2022 +0800
+
+    Update and rename workflow to updateSDK.yml
+
+[33mcommit 6743fadf08780e8ec0365b18b3ef6b0b0a9cdc0b[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Aug 12 12:06:44 2022 +0800
+
+    Rename README.md to CHANGELOG.txt
+
+[33mcommit f6ac428ab8f21953bb473f71e3d07e24a4fdb2e1[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Wed Aug 10 15:48:21 2022 +0800
+
+    Update and rename Plugin.cpp to README.md
+
+[33mcommit 8251758f4fe9379451c8e835f890b91b559be6e4[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Aug 9 16:20:51 2022 +0800
+
+    自定义命令中qq返回支持正则表达式
+
+[33mcommit fadaefdaef2a0422655af9f67e71e1a042b85585[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 19 18:22:06 2022 +0800
+
+    添加了自定义指令QQ反馈
+
+[33mcommit e8053927bcf506c8bc6ec32234f5ed70112ac1ec[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Mon Jul 18 19:18:06 2022 +0800
+
+    修bug
+
+[33mcommit 1f01df44eeaae1eb3ba9cbebf27c2780e1484fec[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 09:31:22 2022 +0800
+
+    Update Plugin.cpp
+
+[33mcommit ce7af10b20cbb801603d2917d3f9c9659173822d[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 09:23:43 2022 +0800
+
+    Update Plugin.cpp
+
+[33mcommit 7c17dcabd76b70b4200fbd7817ea468bdf77791c[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 09:21:00 2022 +0800
+
+    Update Plugin.cpp
+
+[33mcommit 8a11aaba2b0ac654dfa7e2354b976b087daafa7a[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 08:54:39 2022 +0800
+
+    Update Plugin.cpp
+
+[33mcommit 0fb31721bb8ccee86d77de795c135ce1bac5f498[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 08:49:56 2022 +0800
+
+    Update Plugin.cpp
+
+[33mcommit 022d0d08b1e5ab537c10928d38271d26ad8861fb[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 08:46:39 2022 +0800
+
+    Rename README to Plugin.cpp
+
+[33mcommit 7c7248ff19fc5e8971047c2f28895d8d187a5b88[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 08:45:31 2022 +0800
+
+    Rename README to msbuild.yml
+
+[33mcommit a6abb04dca11e32f6c4c616da94a41855052fc44[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 08:44:01 2022 +0800
+
+    Update and rename Plugin.cpp to README
+
+[33mcommit dbd491bbfae7f1661c6be12aaee6de1bee476a7e[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 08:40:10 2022 +0800
+
+    Rename README to RobotInfo.json
+
+[33mcommit 2bec159d8c90f1f722f101827c7e15d39ee24018[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 07:57:33 2022 +0800
+
+    Update and rename RobotInfo.json to README
+
+[33mcommit cbaf9708b4757880d4ac7a13b876cce4b1b6cda9[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Mon Jul 18 07:54:41 2022 +0800
+
+    优化生成物目录
+
+[33mcommit ff1423794ee1eacb06dbca3bb417ee6fe6e01c12[m
+Merge: 977ad8d dcdec0c
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Sun Jul 17 22:36:16 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/Robot_LiteLoader
+
+[33mcommit 977ad8d52e68c01910036eeace536c5366c94fc7[m[33m ([m[1;33mtag: v1.0.3[m[33m)[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Fri Jul 15 16:14:29 2022 +0800
+
+    修bug
+
+[33mcommit dcdec0c2601ca2bd57f215026098bc417f7ebf72[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 14 12:43:13 2022 +0800
+
+    Update README.md
+
+[33mcommit 27fb816560a2ed513e1c1b2eafb469185ec4fceb[m
+Merge: 3791a58 c763c32
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Thu Jul 14 12:29:51 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/Robot_LiteLoader
+
+[33mcommit c763c3219d41eb7f48aa3ea30c39ebc85cac7cb9[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 14 12:27:43 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 3791a58bc33d418fbf674b8629fc54c9698b0cbc[m[33m ([m[1;33mtag: 1.0.2[m[33m)[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Thu Jul 14 12:23:27 2022 +0800
+
+    添加了多服务器支持，修改了一些id的设置，更方便管理了
+
+[33mcommit c11e8594f199e66b265eabbc0dca394380e901c6[m[33m ([m[1;33mtag: v1.0.1[m[33m)[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Wed Jul 13 20:29:07 2022 +0800
+
+    测试action
+
+[33mcommit bdde2ad2abfb30de0cc9bc89b6a9fdfb3f8a9d90[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Wed Jul 13 17:58:00 2022 +0800
+
+    修bug
+
+[33mcommit 663e74673ba3abfebc4a7ca7d07f27c99cbd6b43[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 23:25:17 2022 +0800
+
+    README更新
+
+[33mcommit 8bb000e744d7eadcec1fe74a81fa6ed91c2476e4[m
+Merge: 6e0fa27 23a2a59
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 23:09:04 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/Robot_LiteLoader
+
+[33mcommit 6e0fa276baf9c09cf04e7aa4f33ee5387b8c9e70[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 23:08:48 2022 +0800
+
+    添加"菜单功能"
+
+[33mcommit 23a2a5936e8aeb5d49b6cbb83a79c3046f2fbde5[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Jul 12 18:12:11 2022 +0800
+
+    Update README.md
+
+[33mcommit 37b289d53b89d9bd5de2b0a2e658a93d3c9c58ba[m
+Merge: f1d69f7 f7ab34a
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 18:08:52 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/Robot_LiteLoader
+
+[33mcommit f1d69f79d19928fe4e01e68a99fc2c99a73932ff[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 18:08:37 2022 +0800
+
+    提高运行速度
+
+[33mcommit f7ab34a2c23fd58fa50cc2a0537f7d77bc2d2652[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Jul 12 17:51:07 2022 +0800
+
+    Update README.md
+
+[33mcommit 518b761f2fc4228846ced454be98dbc623193b53[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Jul 12 17:44:46 2022 +0800
+
+    Update op.json
+
+[33mcommit 55afe0ac0246ddbe7c21e9806546bf0f5f9f1848[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Jul 12 17:38:31 2022 +0800
+
+    Update README.md
+
+[33mcommit 5c5131439487816219d31d2ad5038d0684c0a5cb[m
+Merge: daeef2b c0e068a
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 17:31:38 2022 +0800
+
+    Merge https://github.com/XingShuyu/Robot_LiteLoader
+
+[33mcommit daeef2b70b7df171ba77bd51cd6f474ff767fb21[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 17:31:17 2022 +0800
+
+    Revert "添加了”查服“和”查询绑定“"
+    
+    This reverts commit ac0c8f75310f943e0638368cb492059ea18a85bf.
+
+[33mcommit ac0c8f75310f943e0638368cb492059ea18a85bf[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 17:26:23 2022 +0800
+
+    添加了”查服“和”查询绑定“
+
+[33mcommit e0b83f0a56fb4a0149bce9c5114f488e16620b04[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 17:19:28 2022 +0800
+
+    添加了”查询绑定“，”查服“
+
+[33mcommit c0e068a0fa1e67f5664568c2ea9d41c413aefe95[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Tue Jul 12 11:20:03 2022 +0800
+
+    Update README.md
+
+[33mcommit 7bf408c976bdaaad8fec83928160bdb2f8ce4330[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Tue Jul 12 10:55:20 2022 +0800
+
+    添加了OP鉴权
+
+[33mcommit bc59d6291bbcc7f923e9de32e200124cd1650a22[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sat Jul 9 13:01:21 2022 +0800
+
+    Update README.md
+
+[33mcommit 436d69267494f83f42c4e023f1cdab0c1e13b164[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sat Jul 9 10:09:26 2022 +0800
+
+    Update README.md
+
+[33mcommit a0e8be8c70f1d0d0655809a09fd038dacb82be73[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Sat Jul 9 08:15:27 2022 +0800
+
+    Update README.md
+
+[33mcommit 7940badb7335a810ff6808342c93446cb432f6fd[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:35:58 2022 +0800
+
+    Create README.md
+
+[33mcommit 97d6200830d5e65bd3f791fbce0a566de25d0933[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:34:54 2022 +0800
+
+    Delete README
+
+[33mcommit 010a3ec156283a8430e934c23c2c913d3484df59[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:32:45 2022 +0800
+
+    Update README
+
+[33mcommit 8025c7510334349f10471a4dc89a143f907610c8[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:31:32 2022 +0800
+
+    Update README
+
+[33mcommit 0107ede9febe1c683a1ed24536bcfedae4cb5218[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:31:07 2022 +0800
+
+    Update README
+
+[33mcommit 44ee7f632e2f719639ede5484f916be0d9b794eb[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:25:50 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit e42bd0a641b645591a74ec0e5e06e592991d95e7[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:23:47 2022 +0800
+
+    Update README
+
+[33mcommit bae34e7718d8d865d82b3a3407c62ed8f6a4e42b[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Fri Jul 8 08:22:42 2022 +0800
+
+    Update msbuild.yml
+
+[33mcommit 24d47ac649c71874c86167a585f7ae7f2bae49ba[m
+Merge: 291d96b a825d78
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Fri Jul 8 08:17:06 2022 +0800
+
+    Merge branch 'master' of https://github.com/XingShuyu/Robot_LiteLoader
+
+[33mcommit 291d96bc28e26341dc7d05c098093512dbd64feb[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Fri Jul 8 08:16:55 2022 +0800
+
+    添加Json文件
+
+[33mcommit fe131ee9638be87c63bb583ee0f0e61a67c02cb0[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Fri Jul 8 08:05:41 2022 +0800
+
+    修补小漏洞
+
+[33mcommit a825d780f0bfe49daa5b2c48135d2579a0a6c364[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 7 23:11:34 2022 +0800
+
+    Create README
+
+[33mcommit 6f712f260381bd08f00da04b134cdbc76ff9c81f[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 7 23:08:06 2022 +0800
+
+    Delete README
+
+[33mcommit dabd8f52ff110a37736ad78cb8b5a905c9a47cc4[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 7 22:58:14 2022 +0800
+
+    Create README
+
+[33mcommit 1b12b5ec3289e27f3234b27a244c9ac5e3a2d6ab[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 7 22:57:04 2022 +0800
+
+    Delete README
+
+[33mcommit 14c5cfe6cb3af6f22a74576484c6f84c141b39c0[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 7 22:50:35 2022 +0800
+
+    Rename LINK to README
+
+[33mcommit 52be9ff516d8c3b8ff2c022a80ed69e1c15a3cd6[m
+Author: XingShuyu <82715884+XingShuyu@users.noreply.github.com>
+Date:   Thu Jul 7 22:46:07 2022 +0800
+
+    Update and rename README.md to LINK
+
+[33mcommit d25f0cc07ae5c200127325676ec2db3fbf36ffa0[m[33m ([m[1;33mtag: New[m[33m)[m
+Author: XingShuyu <Ning1Yan2Jie3@163.com>
+Date:   Thu Jul 7 22:27:25 2022 +0800
+
+    添加项目文件。
