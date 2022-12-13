@@ -40,8 +40,6 @@ jobs:
         mkdir ../LiteLoader
         mkdir ../LiteLoader/Lib
         ./LibraryBuilder.exe D:/BDS
-        mv bedrock_server_api.lib ../LiteLoader/lib
-        mv bedrock_server_var.lib ../LiteLoader/lib
       shell: bash
 
     - name: Add MSBuild to PATH
