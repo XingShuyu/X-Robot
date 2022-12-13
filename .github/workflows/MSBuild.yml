@@ -34,15 +34,15 @@ jobs:
       shell: bash
 
     - name: Build Library
-      if: steps.cache-bds-lib.outputs.cache-hit != 'true'
-      working-directory: ${{ env.GITHUB_WORKSPACE }}
+      working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
-        cd Tools
-        LibraryBuilder.exe Server
-        mkdir ..\LiteLoader\lib
-        move bedrock_server_api.lib ..\LiteLoader\lib
-        move bedrock_server_var.lib ..\LiteLoader\lib
-      shell: cmd
+        cd SDK/Tools
+        mkdir ../LiteLoader
+        mkdir ../LiteLoader/Lib
+        ./LibraryBuilder.exe D:/BDS
+        mv bedrock_server_api.lib ../LiteLoader/lib
+        mv bedrock_server_var.lib ../LiteLoader/lib
+      shell: bash
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1
