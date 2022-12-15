@@ -78,13 +78,6 @@ void CheckProtocolVersion()
 
 
 
-void startManager()
-{
-	system(".\\Manager.exe");
-}
-
-
-
 //go-cqhttp的API封装
 class msgAPI
 {
@@ -441,14 +434,14 @@ inline int websocketsrv()
 						DWORD End = GetTickCount64();
 						cpu_usage_ratio = cpu_usage_ratio * 100;
 						int cpu_usage = cpu_usage_ratio;
-						string msg = serverName+"服务器信息"+"%0A服务器版本:"+ ll::getBdsVersion()+"%0ABDS协议号:"+to_string(ll::getServerProtocolVersion())+"%0ALL版本号:"+ll::getLoaderVersionString() + " %0A进程PID: " + to_string(current_pid) + " %0ACPU使用率 : " + to_string(cpu_usage) +"%25%0ACPU核数:"+to_string(GetCpuNum()) + " %0A内存占用 : " + to_string(statex.dwMemoryLoad) + " %25%0A总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB%0A剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB%0A服务器启动时间:"+to_string((End-Start)/1000/60/60/24)+"天"+to_string((End - Start) / 1000 / 60 /60) + "小时" + to_string((End - Start) / 1000 / 60 ) + "分钟";
+						string msg = serverName+"服务器信息"+"%0A服务器版本:"+ ll::getBdsVersion()+"%0ABDS协议号:"+to_string(ll::getServerProtocolVersion())+"%0ALL版本号:"+ll::getLoaderVersionString() + " %0A进程PID: " + to_string(current_pid) + " %0ACPU使用率 : " + to_string(cpu_usage) +"%25%0ACPU核数:"+to_string(GetCpuNum()) + " %0A内存占用 : " + to_string(statex.dwMemoryLoad) + " %25%0A总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB%0A剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB%0A服务器启动时间:"+to_string((End-Start)/1000/60/60/24)+"天"+to_string(((End - Start) / 1000 / 60 /60)%24) + "小时" + to_string(((End - Start) / 1000 / 60 )%60) + "分钟";
 						sendMsg.groupMsg(GROUPID, msg);
 						listPlayer();
 					}
 					else if (message == "菜单"&&(timeChecker() == true || role != "member"))
 					{
 						msgAPI sendMsg;
-						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中chat 发送消息到mc%0A4. QQ中管理员以上级别\"sudo 命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中#发送消息到mc%0A4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
 						sendMsg.groupMsg(GROUPID, msg);
 					}
 					else if (timeChecker() == false&&(message=="菜单"||message=="查服"||message=="list"))
@@ -615,10 +608,6 @@ void PluginInit()
 	Logger logger(PLUGIN_NAME);
 	logger.info("若见Websocket Loaded则机器人启动成功");
 	//信息文件的读取
-
-	thread st(startManager);
-	st.detach();
-
 
 	json info;
 	fstream infoFile;
