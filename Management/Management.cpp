@@ -73,7 +73,7 @@ void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
 	return;
 }
 
-int GROUPIDINT;
+INT64 GROUPIDINT;
 string port;
 string serverName;
 int backupTime;
@@ -349,6 +349,12 @@ int main()
 			configCQ();
 			infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
 			info["manager"]["cqhttp_config"] = true;
+			cout << "配置机器人基础信息:" << endl << "你的服务器群QQ号:" << endl;
+			cin >>GROUPIDINT;
+			cout << "请输入你的服务器名称" << endl;
+			cin >> serverName;
+			info["QQ_group_id"] = GROUPIDINT;
+			info["serverName"] = serverName;
 			infoFileOut << std::setw(4) << info << std::endl;
 			infoFileOut.close();
 		}

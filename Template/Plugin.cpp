@@ -40,7 +40,8 @@
 
 
 using namespace nlohmann;
-int GROUPIDINT = 452675761,messageTime = 60;
+INT64 GROUPIDINT = 452675761;
+int messageTime = 60;
 string GROUPID = std::to_string(GROUPIDINT);//QQ群号
 string serverName = "服务器";//服务器名称
 json BindID;//绑定
@@ -351,7 +352,7 @@ inline int websocketsrv()
 				string message;
 				string userid;
 				string username;
-				int groupid=0;
+				INT64 groupid=0;
 				string role="member";
 				string notice_type;
 				try{ msgtype = jm["message_type"];}//msgtype为消息类型，具体见CQ-http：事件
@@ -646,7 +647,7 @@ void PluginInit()
 	CommandForward = info["settings"]["CommandForward"];
 	infoFile.close();
 
-	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
+	std::cout << "转发QQ群：" << GROUPID << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
 
 
 	//绑定名单的读取和写入
