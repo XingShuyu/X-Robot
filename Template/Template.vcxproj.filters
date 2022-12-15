@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Json">
+      <UniqueIdentifier>{77b0f647-74e1-422d-9e36-fd0a4ee38f49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -61,5 +64,19 @@
     <Library Include="..\SDK\lib\LiteLoader.lib">
       <Filter>Resourse</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Json\BindID.json">
+      <Filter>Json</Filter>
+    </None>
+    <None Include="..\Json\Message.json">
+      <Filter>Json</Filter>
+    </None>
+    <None Include="..\Json\op.json">
+      <Filter>Json</Filter>
+    </None>
+    <None Include="..\Json\RobotInfo.json">
+      <Filter>Json</Filter>
+    </None>
   </ItemGroup>
 </Project>

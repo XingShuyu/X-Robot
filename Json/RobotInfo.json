@@ -9,6 +9,7 @@
 		"QQForward": true,
 		"MCForward": true,
 		"WhitelistAdd": true,
+		"CommandForward": true,
 		"list": true,
 		"SrvInfo": true,
 		"messageTime": 60

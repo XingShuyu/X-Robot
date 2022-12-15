@@ -102,6 +102,12 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
     <Library Include="openssl\libcrypto-3-x64.lib" />
     <Library Include="openssl\libssl-3-x64.lib" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Json\BindID.json" />
+    <None Include="..\Json\Message.json" />
+    <None Include="..\Json\op.json" />
+    <None Include="..\Json\RobotInfo.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

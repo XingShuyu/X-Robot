@@ -46,7 +46,7 @@ string serverName = "服务器";//服务器名称
 json BindID;//绑定
 json op;//op鉴定权限
 string port;//服务器端口
-bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand;//配置选择
+bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand,CommandForward;//配置选择
 string cmdMsg;//控制台消息
 string BindCheckId="";
 DWORD Start;
@@ -488,14 +488,14 @@ inline int websocketsrv()
 							msg = "whitelist add \"" + messageOLD + "\"";
 							Level::runcmd(msg);
 							BindID[userid] = messageOLD;
-							ofstream a(".\\plugins\\LL_Robot\\BindID.json");//储存绑定数据
+							BindID[messageOLD] = userid;
+							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 							a << std::setw(4) << BindID << std::endl;
-							break;
+							a.close();
 						}
 						else
 						{
 							sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
-							break;
 						}
 						 
 					}
@@ -514,6 +514,7 @@ inline int websocketsrv()
 							msg = "你好,[CQ:at,qq=" + adderId + "],你以前的id是: " + oldId + "更改将会删除旧的白名单，请告诉我你的XboxID";
 							sendMsg.groupMsg(GROUPID, msg);
 							msg = "whitelist remove " + oldId;
+							BindID.erase(BindID.find(oldId));
 							Level::runcmd(msg);
 						}
 						catch (...)
@@ -626,6 +627,7 @@ void PluginInit()
 	listCommand = info["settings"]["list"];
 	SrvInfoCommand = info["settings"]["SrvInfo"];
 	messageTime = info["settings"]["messageTime"];
+	CommandForward = info["settings"]["CommandForward"];
 	infoFile.close();
 
 	std::cout << "转发QQ群：" << GROUPIDINT << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
@@ -653,6 +655,7 @@ reBoot:try
 	}
 	catch(...)
 	{
+		
 		goto reBoot;
 	}
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)
@@ -675,14 +678,17 @@ reBoot:try
 				return true;
 			});
 	}
-	Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
-		{
-			msgAPI msgSend;
-			cmdMsg = ev.mOutput;
-			string outPut = serverName + ": " + ev.mOutput;
-			msgSend.groupMsg(GROUPID, outPut);
-			return true;
-		});
+	if (CommandForward)
+	{
+		Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
+			{
+				msgAPI msgSend;
+				cmdMsg = ev.mOutput;
+				string outPut = serverName + ": " + ev.mOutput;
+				msgSend.groupMsg(GROUPID, outPut);
+				return true;
+			});
+	}
 	if(join_escape)
 	{
 	
