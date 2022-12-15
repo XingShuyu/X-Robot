@@ -551,7 +551,23 @@ inline int websocketsrv()
 						sendMsg.groupMsg(GROUPID, msg);
 
 					}
+					if (message.find("查询绑定") == 0 && message.length() > 13&&role!="member")
+					{
+						message = message.substr(13, message.length());
+						string XboxName;
+						try
+						{
+							XboxName = BindID[message];
+						}
+						catch (...)
+						{
+							XboxName = "未绑定";
+						}
+						string msg = "玩家 "+message+" 的绑定是: " + XboxName;
+						msgAPI sendMsg;
+						sendMsg.groupMsg(GROUPID, msg);
 
+					}
 
 					//自定义指令集
 					//用新线程属于是性能换时间了
