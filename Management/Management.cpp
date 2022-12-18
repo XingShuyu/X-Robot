@@ -29,6 +29,7 @@ using namespace nlohmann;
 
 DWORD timeStart = 0;
 int interval = 0;
+json op;
 
 //go-cqhttp的API封装
 class msgAPI
@@ -90,6 +91,34 @@ int autoBackup()
 	system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
 	goto Backup;
 }
+
+inline bool OpCheck(string userid, string role)
+{
+	if (op["OP"] == 0)
+	{
+		if (role != "member")
+		{
+			return true;
+		}
+		else if (role == "member")
+		{
+			return false;
+		}
+	}
+	else if (op["OP"] == 1)
+	{
+		try
+		{
+			int playerOp = op[userid];
+			return true;
+		}
+		catch (...)
+		{
+			return false;
+		}
+	}
+}
+
 
 
 inline int websocketsrv()
@@ -220,20 +249,20 @@ reload:WSADATA wsaData;
 				}
 				if (groupid == GROUPIDINT)
 				{
-					if (message == "开服" && role != "member") 
+					if (message == "开服" && OpCheck(userid, role)==true)
 					{
 						Sleep(300);
 						cout << "正在开服" << endl;
 						thread lunchSrv(lunch);
 						lunchSrv.detach();
 					}
-					if (message == "backup" && role != "member")
+					if (message == "backup" && OpCheck(userid, role)==true)
 					{
 						system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
 						msgAPI msgSend;
 						msgSend.groupMsg(to_string(GROUPIDINT), "备份完成");
 					}
-					if (message == "recovery" && role != "member")
+					if (message == "recovery" && OpCheck(userid, role) == true)
 					{
 						Sleep(500);
 						system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
@@ -341,6 +370,13 @@ int main()
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
 	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();
+
+
+	fstream OPFile;
+	OPFile.open(".\\plugins\\X-Robot\\op.json");
+	OPFile >> op;
+
+
 	if (info["manager"]["multi_server"] == false)
 	{
 		if (aleadyConfig == false)
