@@ -30,6 +30,7 @@ using namespace nlohmann;
 DWORD timeStart = 0;
 int interval = 0;
 json op;
+bool start_mode;
 
 //go-cqhttp的API封装
 class msgAPI
@@ -82,7 +83,14 @@ int backupTime;
 
 void lunch()
 {
-	system(".\\BDS-Deamon.cmd");
+	if (start_mode)
+	{
+		system("start .\\BDS-Deamon.cmd");
+	}
+	else
+	{
+		system(".\\BDS-Deamon.cmd");
+	}
 }
 
 int autoBackup()
@@ -368,6 +376,7 @@ int main()
 	GROUPIDINT = info["QQ_group_id"];
 	serverName = info["serverName"];
 	port = info["manager_port"];
+	start_mode = info["manager"]["start_mode"];
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
 	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();

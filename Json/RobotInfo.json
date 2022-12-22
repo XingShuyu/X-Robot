@@ -17,6 +17,7 @@
 	"manager": {
 		"cqhttp_config": false,
 		"backup_interval": 24,
-		"multi_server": false
+		"multi_server": false,
+		"start_mode": false
 	}
 }
