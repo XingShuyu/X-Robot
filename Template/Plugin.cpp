@@ -49,9 +49,9 @@ json op;//op鉴定权限
 string port;//服务器端口
 bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand,CommandForward;//配置选择
 string cmdMsg;//控制台消息
-string BindCheckId="";
 DWORD Start;
 DWORD timeStart;
+string message;
 
 using namespace std;
 
@@ -243,7 +243,6 @@ inline int customMsg(string message,string username,string cmdMsg,string userid)
 		num++;
 	}
 }
-
 inline bool OpCheck(string userid,string role)
 {
 	if (op["OP"] == 0)
@@ -376,7 +375,6 @@ inline int websocketsrv()
 				}
 				catch (...) {}
 				string msgtype;
-				string message;
 				string userid;
 				string username;
 				INT64 groupid=0;
@@ -415,8 +413,8 @@ inline int websocketsrv()
 						{
 							if (role != "member")//QQ执行指令
 							{
-								message = message.substr(1, message.length());
-								Level::runcmd(message);
+								string cmdMsg = message.substr(1, message.length());
+								Level::runcmd(cmdMsg);
 							}
 							else if (role == "member")
 							{
@@ -429,8 +427,8 @@ inline int websocketsrv()
 							try
 							{
 								int playerOp = op[userid];
-								message = message.substr(5, message.length());
-								Level::runcmd(message);
+								string cmdMsg = message.substr(5, message.length());
+								Level::runcmd(cmdMsg);
 							}
 							catch (...)
 							{
@@ -469,7 +467,7 @@ inline int websocketsrv()
 					else if (message == "菜单"&&(timeChecker() == true || OpCheck(userid, role) == true))
 					{
 						msgAPI sendMsg;
-						string msg = "\# Robot_LiteLoader%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中#发送消息到mc%0A4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"%0A5. QQ新群员自动增加白名单，群员退群取消白名单, \"重置个人绑定\"来重置, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+						string msg = "\# X-Robot%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中%25发送消息到mc%0A4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"%0A5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
 						sendMsg.groupMsg(GROUPID, msg);
 					}
 					else if (timeChecker() == false&&(message=="菜单"||message=="查服"||message=="list"))
@@ -501,22 +499,31 @@ inline int websocketsrv()
 
 					//ID与白名单相关
 
-					if (userid == BindCheckId)
+					if (message.find("绑定") == 0 && message.length() > 7)
 					{
 						msgAPI sendMsg;
-						string messageOLD = message;
-						cout << messageOLD << endl;
-						BindCheckId = "";
-						cout << BindCheckId;
-						if (messageOLD.find("CQ:") == messageOLD.npos)
+						if (message.find("CQ:") == message.npos)
 						{
-							string msg = "你的XboxID为：" + messageOLD + " %0A正在为你绑定...";
+							message = message.substr(7, message.length());
+							string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
 							sendMsg.groupMsg(GROUPID, msg);
 
-							msg = "whitelist add \"" + messageOLD + "\"";
+							msg = "whitelist add \"" + message + "\"";
 							Level::runcmd(msg);
-							BindID[userid] = messageOLD;
-							BindID[messageOLD] = userid;
+							try {
+								string XboxName = "";
+								XboxName = BindID[userid];
+								BindID.erase(BindID.find(userid));
+								BindID.erase(BindID.find(XboxName));
+								ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+								a << std::setw(4) << BindID << std::endl;
+								a.close();
+								msg = "whitelist remove \"" + XboxName + "\"";
+								Level::runcmd(msg);
+							}
+							catch (...) {};
+							BindID[userid] = message;
+							BindID[message] = userid;
 							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 							a << std::setw(4) << BindID << std::endl;
 							a.close();
@@ -527,37 +534,27 @@ inline int websocketsrv()
 						}
 						 
 					}
-					cout << BindCheckId;
 
-					if ((notice_type == "group_increase" || message == "重置个人绑定") && whitelistAdd == true)
+					if ((notice_type == "group_increase") && whitelistAdd == true)
 					{
 						msgAPI sendMsg;
-						string adderId = userid;
-						BindCheckId = userid;
 						string msg;
-						string oldId = "";
-						try
-						{
-							oldId = BindID[adderId];
-							msg = "你好,[CQ:at,qq=" + adderId + "],你以前的id是: " + oldId + "更改将会删除旧的白名单，请告诉我你的XboxID";
-							sendMsg.groupMsg(GROUPID, msg);
-							msg = "whitelist remove " + oldId;
-							BindID.erase(BindID.find(oldId));
-							Level::runcmd(msg);
-						}
-						catch (...)
-						{
-							msg = "欢迎新成员[CQ:at,qq=" + userid + "],让我们开始一些基础设置吧";
-							sendMsg.groupMsg(GROUPID, msg);
-							sendMsg.groupMsg(GROUPID, "现在，请发送你的XboxID，即你的游戏名，我们将为你绑定白名单。");
-						}
+						msg = "欢迎新成员[CQ:at,qq=" + userid + "],发送\"绑定 ****\"进行绑定并获取白名单";
+						sendMsg.groupMsg(GROUPID, msg);
 					}
 					if (notice_type == "group_decrease")
 					{
 						msgAPI sendmsg;
 						string XboxName;
-						try { XboxName = BindID[userid]; }
-						catch (...) { XboxName = "未绑定"; }
+						try {
+							XboxName = BindID[userid]; 						
+							BindID.erase(BindID.find(userid));
+							BindID.erase(BindID.find(XboxName));
+							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+							a << std::setw(4) << BindID << std::endl;
+							a.close();
+						}
+						catch (...) { XboxName = "未绑定"+ userid ; }
 						string msg = XboxName + "离开了我们%0A已自动删除白名单";
 						sendmsg.groupMsg(GROUPID, msg);
 						msg = "whitelist remove " + XboxName;
@@ -699,7 +696,7 @@ reBoot:try
 	}
 	catch(...)
 	{
-		
+		cout << "机器人发生崩溃!正在进行重启" << endl << "最后一次收到的消息是:" << message << endl;
 		goto reBoot;
 	}
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)

@@ -358,6 +358,7 @@ a:Sleep(60000);
 
 int main()
 {
+	system("chcp 65001");
 	json info;
 	fstream infoFile;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
