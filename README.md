@@ -40,6 +40,9 @@
 
 ![image](https://user-images.githubusercontent.com/82715884/207810448-0243a1da-2e92-4763-a70d-827558429d71.png)
 
+>问题反馈/交流
+点击链接加入群聊【X-Robot bug交流群】：https://jq.qq.com/?_wv=1027&k=ao4sAu3W
+
 # 赞助
 不要求强制赞助，但是你的赞助可以帮助我更好的发展
 * [爱发电](https://afdian.net/@X-Robot)
