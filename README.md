@@ -40,8 +40,31 @@
 
 ![image](https://user-images.githubusercontent.com/82715884/207810448-0243a1da-2e92-4763-a70d-827558429d71.png)
 
->问题反馈/交流
-点击链接加入群聊【X-Robot bug交流群】：https://jq.qq.com/?_wv=1027&k=ao4sAu3W
+>常见问题
+Q：面板服总是报“CQ疑似异常，正在尝试重启"，QQ发消息总是不回应
+A：把/plugins/X-Robot/go-cqhttp/config.yml中的
+```
+heartbeat:
+  interval: 5
+```
+替换成
+```
+heartbeat:
+  interval: -1
+```
+
+Q：非面板服开服卡进度，双击启动bedrock_server_mod可以启动
+A：把/plugins/X-Robot/RobotInfo.json中的start_mode改成false
+
+Q：想用中文的服务器名/初始化后服务器无法启动或启动有问题
+A：手动配置/plugins/X-Robot/RobotInfo.json中的
+```
+    "QQ_group_id": 这里换成你的QQ群号
+    "manager": {
+        "cqhttp_config": true,
+    }
+    "serverName": "这里换成你的服务器名字",
+```
 
 # 赞助
 不要求强制赞助，但是你的赞助可以帮助我更好的发展
