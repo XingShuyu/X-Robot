@@ -16760,7 +16760,7 @@ NLOHMANN_JSON_NAMESPACE_END
 // |  |  |__   |  |  | | | |  version 3.11.2
 // |_____|_____|_____|_|___|  https://github.com/nlohmann/json
 //
-// SPDX-FileCopyrightText: 2008-2009 Björn Hoehrmann <bjoern@hoehrmann.de>
+// SPDX-FileCopyrightText: 2008-2009 Bj?rn Hoehrmann <bjoern@hoehrmann.de>
 // SPDX-FileCopyrightText: 2013-2022 Niels Lohmann <https://nlohmann.me>
 // SPDX-License-Identifier: MIT
 

@@ -1,4 +1,4 @@
-ï»¿// Management.cpp : æ­¤æ–‡ä»¶åŒ…å« "main" å‡½æ•°ã€‚ç¨‹åºæ‰§è¡Œå°†åœ¨æ­¤å¤„å¼€å§‹å¹¶ç»“æŸã€‚
+// Management.cpp : ´ËÎÄ¼ş°üº¬ "main" º¯Êı¡£³ÌĞòÖ´ĞĞ½«ÔÚ´Ë´¦¿ªÊ¼²¢½áÊø¡£
 //
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -32,7 +32,7 @@ int interval = 0;
 json op;
 bool start_mode;
 
-//go-cqhttpçš„APIå°è£…
+//go-cqhttpµÄAPI·â×°
 class msgAPI
 {
 public:
@@ -80,6 +80,22 @@ string port;
 string serverName;
 int backupTime;
 
+string GBK_2_UTF8(string gbkStr)
+{
+	string outUtf8 = "";
+	int n = MultiByteToWideChar(CP_ACP, 0, gbkStr.c_str(), -1, NULL, 0);
+	WCHAR* str1 = new WCHAR[n];
+	MultiByteToWideChar(CP_ACP, 0, gbkStr.c_str(), -1, str1, n);
+	n = WideCharToMultiByte(CP_UTF8, 0, str1, -1, NULL, 0, NULL, NULL);
+	char* str2 = new char[n];
+	WideCharToMultiByte(CP_UTF8, 0, str1, -1, str2, n, NULL, NULL);
+	outUtf8 = str2;
+	delete[]str1;
+	str1 = NULL;
+	delete[]str2;
+	str2 = NULL;
+	return outUtf8;
+}
 
 void lunch()
 {
@@ -95,7 +111,7 @@ void lunch()
 
 int autoBackup()
 {
-	Backup:Sleep(backupTime * 3600 * 1000);
+Backup:Sleep(backupTime * 3600 * 1000);
 	system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
 	goto Backup;
 }
@@ -227,15 +243,15 @@ reload:WSADATA wsaData;
 				string role = "member";
 				string notice_type;
 				string post_type;
-				try { msgtype = jm["message_type"]; }//msgtypeä¸ºæ¶ˆæ¯ç±»å‹ï¼Œå…·ä½“è§CQ-httpï¼šäº‹ä»¶
+				try { msgtype = jm["message_type"]; }//msgtypeÎªÏûÏ¢ÀàĞÍ£¬¾ßÌå¼ûCQ-http£ºÊÂ¼ş
 				catch (...) {}
-				try { message = jm["message"]; }//messageä¸ºæ¶ˆæ¯å†…å®¹ï¼Œä¸ºstring
+				try { message = jm["message"]; }//messageÎªÏûÏ¢ÄÚÈİ£¬Îªstring
 				catch (...) {}
-				try { role = jm["sender"]["role"]; }//roleä¸ºå‘é€è€…çš„ç¾¤èŠèº«ä»½ï¼Œå¯é€‰å€¼ï¼š"owner"ç¾¤ä¸»   "admin"ç®¡ç†å‘˜   "member"æˆå‘˜,å˜é‡ç±»å‹ä¸ºstring
+				try { role = jm["sender"]["role"]; }//roleÎª·¢ËÍÕßµÄÈºÁÄÉí·İ£¬¿ÉÑ¡Öµ£º"owner"ÈºÖ÷   "admin"¹ÜÀíÔ±   "member"³ÉÔ±,±äÁ¿ÀàĞÍÎªstring
 				catch (...) {}
-				try { userid = to_string(jm["user_id"]); }//useridä¸ºå‘é€è€…QQå·ï¼Œä¸ºint
+				try { userid = to_string(jm["user_id"]); }//useridÎª·¢ËÍÕßQQºÅ£¬Îªint
 				catch (...) {}
-				try { post_type = to_string(jm["post_type"]); }//post_typeä¸ºæ¶ˆæ¯ç±»å‹å·ï¼Œä¸ºstring
+				try { post_type = to_string(jm["post_type"]); }//post_typeÎªÏûÏ¢ÀàĞÍºÅ£¬Îªstring
 				catch (...) {}
 				try
 				{
@@ -244,38 +260,38 @@ reload:WSADATA wsaData;
 					{
 						username = jm["sender"]["nickname"];
 					}
-				}//usernameï¼Œä¸ºå‘é€è€…çš„çš„ç¾¤æ˜µç§°ï¼ˆä¼˜å…ˆï¼‰æˆ–è€…ç”¨æˆ·åï¼Œä¸ºstring
+				}//username£¬Îª·¢ËÍÕßµÄµÄÈºêÇ³Æ£¨ÓÅÏÈ£©»òÕßÓÃ»§Ãû£¬Îªstring
 				catch (...) {}
-				try { groupid = jm["group_id"]; }//groupidä¸ºæ¶ˆæ¯æ¥æºçš„QQç¾¤ï¼Œä¸ºint
+				try { groupid = jm["group_id"]; }//groupidÎªÏûÏ¢À´Ô´µÄQQÈº£¬Îªint
 				catch (...) {}
 				try { notice_type = jm["notice_type"]; }
 				catch (...) { notice_type = ""; }
-				//æ¶ˆæ¯å¤„ç†
+				//ÏûÏ¢´¦Àí
 				if (post_type == "\"meta_event\"")
 				{
 					timeStart = GetTickCount64();
 				}
 				if (groupid == GROUPIDINT)
 				{
-					if (message == "å¼€æœ" && OpCheck(userid, role)==true)
+					if (message == "¿ª·ş" && OpCheck(userid, role) == true)
 					{
 						Sleep(300);
-						cout << "æ­£åœ¨å¼€æœ" << endl;
+						cout << "ÕıÔÚ¿ª·ş" << endl;
 						thread lunchSrv(lunch);
 						lunchSrv.detach();
 					}
-					if (message == "backup" && OpCheck(userid, role)==true)
+					if (message == "backup" && OpCheck(userid, role) == true)
 					{
 						system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
 						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), "å¤‡ä»½å®Œæˆ");
+						msgSend.groupMsg(to_string(GROUPIDINT), "±¸·İÍê³É");
 					}
 					if (message == "recovery" && OpCheck(userid, role) == true)
 					{
 						Sleep(500);
 						system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
 						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), "å›æ¡£å®Œæˆ,æ­£åœ¨é‡å¯æœåŠ¡å™¨");
+						msgSend.groupMsg(to_string(GROUPIDINT), "»ØµµÍê³É,ÕıÔÚÖØÆô·şÎñÆ÷");
 						system("start .\\BDS-Deamon.cmd");
 					}
 				}
@@ -323,20 +339,20 @@ reload:WSADATA wsaData;
 
 int configCQ()
 {
-    std::cout << "é…ç½® go-cqhttp\n";
-    string QQ;
-    string password;
-    cout << "QQ:\n";
-    cin >> QQ;
-    cout << "password:\n";
-    cin >> password;
-    Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
-    cout << "CQå·²è¢«è‡ªåŠ¨é…ç½®å®Œæˆ";
-    config["account"]["uin"] = QQ;
-    config["account"]["password"] = password;
+	std::cout << "ÅäÖÃ go-cqhttp\n";
+	string QQ;
+	string password;
+	cout << "QQ:\n";
+	cin >> QQ;
+	cout << "password:\n";
+	cin >> password;
+	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+	cout << "CQÒÑ±»×Ô¶¯ÅäÖÃÍê³É";
+	config["account"]["uin"] = QQ;
+	config["account"]["password"] = password;
 
-    ofstream fout;
-    fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+	ofstream fout;
+	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	fout << config;
 	return 0;
 }
@@ -348,14 +364,14 @@ int startCq()
 
 
 
-inline bool CQSelfChecker()//cqå¯åŠ¨è‡ªæ£€
+inline bool CQSelfChecker()//cqÆô¶¯×Ô¼ì
 {
 a:Sleep(60000);
 	while ((GetTickCount64() - timeStart) <= 3000 * interval)
 	{
 		Sleep(1000);
 	}
-	cout << "CQç–‘ä¼¼å¼‚å¸¸ï¼Œå°è¯•å¯åŠ¨CQ...." << endl;
+	cout << "CQÒÉËÆÒì³££¬³¢ÊÔÆô¶¯CQ...." << endl;
 	system("tskill go-cqhttp");
 	thread tl(startCq);
 	tl.detach();
@@ -366,7 +382,7 @@ a:Sleep(60000);
 
 int main()
 {
-	system("chcp 65001");
+	system("chcp 936");
 	json info;
 	fstream infoFile;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
@@ -395,13 +411,16 @@ int main()
 			configCQ();
 			infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
 			info["manager"]["cqhttp_config"] = true;
-			cout << "é…ç½®æœºå™¨äººåŸºç¡€ä¿¡æ¯:" << endl << "ä½ çš„æœåŠ¡å™¨ç¾¤QQå·:" << endl;
-			cin >>GROUPIDINT;
-			cout << "è¯·è¾“å…¥ä½ çš„æœåŠ¡å™¨åç§°" << endl;
+			cout << "ÅäÖÃ»úÆ÷ÈË»ù´¡ĞÅÏ¢:" << endl << "ÄãµÄ·şÎñÆ÷ÈºQQºÅ:" << endl;
+			cin >> GROUPIDINT;
+			cout << "ÇëÊäÈëÄãµÄ·şÎñÆ÷Ãû³Æ" << endl;
 			cin >> serverName;
+
 			info["QQ_group_id"] = GROUPIDINT;
-			info["serverName"] = serverName;
-			infoFileOut << std::setw(4) << info << std::endl;
+			string OldName = info["serverName"];
+			string JsonInfo = info.dump(4);
+			JsonInfo.replace(JsonInfo.find(OldName), OldName.length(), serverName);
+			infoFileOut << GBK_2_UTF8(JsonInfo);
 			infoFileOut.close();
 		}
 		thread tl(startCq);
@@ -414,13 +433,13 @@ int main()
 	websocketsrv();
 }
 
-// è¿è¡Œç¨‹åº: Ctrl + F5 æˆ–è°ƒè¯• >â€œå¼€å§‹æ‰§è¡Œ(ä¸è°ƒè¯•)â€èœå•
-// è°ƒè¯•ç¨‹åº: F5 æˆ–è°ƒè¯• >â€œå¼€å§‹è°ƒè¯•â€èœå•
+// ÔËĞĞ³ÌĞò: Ctrl + F5 »òµ÷ÊÔ >¡°¿ªÊ¼Ö´ĞĞ(²»µ÷ÊÔ)¡±²Ëµ¥
+// µ÷ÊÔ³ÌĞò: F5 »òµ÷ÊÔ >¡°¿ªÊ¼µ÷ÊÔ¡±²Ëµ¥
 
-// å…¥é—¨ä½¿ç”¨æŠ€å·§: 
-//   1. ä½¿ç”¨è§£å†³æ–¹æ¡ˆèµ„æºç®¡ç†å™¨çª—å£æ·»åŠ /ç®¡ç†æ–‡ä»¶
-//   2. ä½¿ç”¨å›¢é˜Ÿèµ„æºç®¡ç†å™¨çª—å£è¿æ¥åˆ°æºä»£ç ç®¡ç†
-//   3. ä½¿ç”¨è¾“å‡ºçª—å£æŸ¥çœ‹ç”Ÿæˆè¾“å‡ºå’Œå…¶ä»–æ¶ˆæ¯
-//   4. ä½¿ç”¨é”™è¯¯åˆ—è¡¨çª—å£æŸ¥çœ‹é”™è¯¯
-//   5. è½¬åˆ°â€œé¡¹ç›®â€>â€œæ·»åŠ æ–°é¡¹â€ä»¥åˆ›å»ºæ–°çš„ä»£ç æ–‡ä»¶ï¼Œæˆ–è½¬åˆ°â€œé¡¹ç›®â€>â€œæ·»åŠ ç°æœ‰é¡¹â€ä»¥å°†ç°æœ‰ä»£ç æ–‡ä»¶æ·»åŠ åˆ°é¡¹ç›®
-//   6. å°†æ¥ï¼Œè‹¥è¦å†æ¬¡æ‰“å¼€æ­¤é¡¹ç›®ï¼Œè¯·è½¬åˆ°â€œæ–‡ä»¶â€>â€œæ‰“å¼€â€>â€œé¡¹ç›®â€å¹¶é€‰æ‹© .sln æ–‡ä»¶
+// ÈëÃÅÊ¹ÓÃ¼¼ÇÉ: 
+//   1. Ê¹ÓÃ½â¾ö·½°¸×ÊÔ´¹ÜÀíÆ÷´°¿ÚÌí¼Ó/¹ÜÀíÎÄ¼ş
+//   2. Ê¹ÓÃÍÅ¶Ó×ÊÔ´¹ÜÀíÆ÷´°¿ÚÁ¬½Óµ½Ô´´úÂë¹ÜÀí
+//   3. Ê¹ÓÃÊä³ö´°¿Ú²é¿´Éú³ÉÊä³öºÍÆäËûÏûÏ¢
+//   4. Ê¹ÓÃ´íÎóÁĞ±í´°¿Ú²é¿´´íÎó
+//   5. ×ªµ½¡°ÏîÄ¿¡±>¡°Ìí¼ÓĞÂÏî¡±ÒÔ´´½¨ĞÂµÄ´úÂëÎÄ¼ş£¬»ò×ªµ½¡°ÏîÄ¿¡±>¡°Ìí¼ÓÏÖÓĞÏî¡±ÒÔ½«ÏÖÓĞ´úÂëÎÄ¼şÌí¼Óµ½ÏîÄ¿
+//   6. ½«À´£¬ÈôÒªÔÙ´Î´ò¿ª´ËÏîÄ¿£¬Çë×ªµ½¡°ÎÄ¼ş¡±>¡°´ò¿ª¡±>¡°ÏîÄ¿¡±²¢Ñ¡Ôñ .sln ÎÄ¼ş

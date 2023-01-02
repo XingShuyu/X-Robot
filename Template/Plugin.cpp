@@ -55,8 +55,8 @@ string message;
 
 using namespace std;
 
-Logger logger("robot");
-
+Logger logger("Robot");
+Logger Ilog("X-Robot");
 
 
 //原来在dllmain中的版本检查
@@ -160,7 +160,8 @@ inline void msgCut(string message,string username)
 	if (message.find("CQ:") == message.npos)
 	{
 		sendmsg = serverName+":<" + username + ">" + message;
-		cout << "转发消息：" << sendmsg << endl;
+		Ilog.info("转发消息:" + sendmsg);
+		//cout << "转发消息：" << sendmsg << endl;
 		Level::broadcastText(sendmsg, (TextType)0);
 
 	}
@@ -366,22 +367,20 @@ inline int websocketsrv()
 			if (iResult > 0) {
 				string jsonmsg = recvbuf;
 				jsonmsg = jsonmsg.substr(0, iResult);
-				jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find("}"));
+				jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find_last_of("}")-4);
+				//cout <<"/////////////////////////////" << jsonmsg << "////////////////////////////////" << endl;
 					// parse explicitly
 				json jm;
 				try
 				{
 					jm = json::parse(jsonmsg.begin(), jsonmsg.end());
 				}
-				catch (...) {}
-				string msgtype;
+				catch (...) { cout << "反序列化失败" << endl << endl << endl << endl; }
 				string userid;
 				string username;
 				INT64 groupid=0;
 				string role="member";
 				string notice_type;
-				try{ msgtype = jm["message_type"];}//msgtype为消息类型，具体见CQ-http：事件
-				catch (...){}
 				try{ message = jm["message"]; }//message为消息内容，为string
 				catch (...){}
 				try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
@@ -401,9 +400,8 @@ inline int websocketsrv()
 				catch (...) {}
 				try { notice_type = jm["notice_type"]; }
 				catch (...) { notice_type = ""; }
-				
 				//消息处理
-				if (groupid == GROUPIDINT)
+				if (groupid == GROUPIDINT&&notice_type=="")
 				{
 					//常规指令集
 					if (message.find("/") == 0 && message.length() >= 3)
@@ -499,17 +497,15 @@ inline int websocketsrv()
 
 					//ID与白名单相关
 
-					if (message.find("绑定") == 0 && message.length() > 7)
+					if (message.find("绑定") == 0 && message.length() > 6)
 					{
 						msgAPI sendMsg;
-						if (message.find("CQ:") == message.npos)
+						if (message.find("[CQ:") == message.npos&&message.find("[mirai:"))
 						{
-							message = message.substr(7, message.length());
+							if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
+							else if(message.substr(6,1)!=""){ message = message.substr(6, message.length()); }
 							string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
 							sendMsg.groupMsg(GROUPID, msg);
-
-							msg = "whitelist add \"" + message + "\"";
-							Level::runcmd(msg);
 							try {
 								string XboxName = "";
 								XboxName = BindID[userid];
@@ -519,6 +515,8 @@ inline int websocketsrv()
 								a << std::setw(4) << BindID << std::endl;
 								a.close();
 								msg = "whitelist remove \"" + XboxName + "\"";
+								Level::runcmd(msg);
+								msg = "whitelist add \"" + message + "\"";
 								Level::runcmd(msg);
 							}
 							catch (...) {};
