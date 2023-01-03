@@ -500,7 +500,7 @@ inline int websocketsrv()
 					if (message.find("绑定") == 0 && message.length() > 6)
 					{
 						msgAPI sendMsg;
-						if (message.find("[CQ:") == message.npos&&message.find("[mirai:"))
+						if (message.find("[CQ:") == message.npos&&message.find("[mirai:")==message.npos)
 						{
 							if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
 							else if(message.substr(6,1)!=""){ message = message.substr(6, message.length()); }

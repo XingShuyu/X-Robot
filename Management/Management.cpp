@@ -97,6 +97,25 @@ string GBK_2_UTF8(string gbkStr)
 	return outUtf8;
 }
 
+string UTF8_2_GBK(string utf8Str)
+{
+	string outGBK = "";
+	int n = MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, NULL, 0);
+	WCHAR* str1 = new WCHAR[n];
+	MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, str1, n);
+	n = WideCharToMultiByte(CP_ACP, 0, str1, -1, NULL, 0, NULL, NULL);
+	char* str2 = new char[n];
+	WideCharToMultiByte(CP_ACP, 0, str1, -1, str2, n, NULL, NULL);
+	outGBK = str2;
+	delete[] str1;
+	str1 = NULL;
+	delete[] str2;
+	str2 = NULL;
+	return outGBK;
+}
+
+
+
 void lunch()
 {
 	if (start_mode)
@@ -273,7 +292,7 @@ reload:WSADATA wsaData;
 				}
 				if (groupid == GROUPIDINT)
 				{
-					if (message == "开服" && OpCheck(userid, role) == true)
+					if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
 					{
 						Sleep(300);
 						cout << "正在开服" << endl;
@@ -282,16 +301,17 @@ reload:WSADATA wsaData;
 					}
 					if (message == "backup" && OpCheck(userid, role) == true)
 					{
+						system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
 						system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
 						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), "备份完成");
+						msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
 					}
 					if (message == "recovery" && OpCheck(userid, role) == true)
 					{
 						Sleep(500);
 						system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
 						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), "回档完成,正在重启服务器");
+						msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("回档完成,正在重启服务器"));
 						system("start .\\BDS-Deamon.cmd");
 					}
 				}
