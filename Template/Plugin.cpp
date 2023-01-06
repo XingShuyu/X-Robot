@@ -52,6 +52,8 @@ string cmdMsg;//控制台消息
 DWORD Start;
 DWORD timeStart;
 string message;
+string http;
+httplib::Client cli("127.0.0.1:5700");
 
 using namespace std;
 
@@ -87,39 +89,45 @@ public:
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
 	void sendBack(string msgType, string id, string groupId, string msg);
+	json groupList(string group_id, bool no_cache);
 };
 void msgAPI::privateMsg(string QQnum, string msg)
 {
-	string http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
+	http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
 	const char* path = http.c_str();
-	httplib::Client cli("127.0.0.1:5700");
 	auto res = cli.Get(path);
 
 }
 void msgAPI::groupMsg(string group_id, string msg)
 {
-	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
+	http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
 	const char* path = http.c_str();
-	httplib::Client cli("127.0.0.1:5700");
 	auto res = cli.Get(path);
 }
 void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
 {
 	if (msgType == "private")
 	{
-		string http = "/send_private_msg?user_id=" + id + "&message=" + msg;
+		http = "/send_private_msg?user_id=" + id + "&message=" + msg;
 		const char* path = http.c_str();
-		httplib::Client cli("127.0.0.1:5700");
 		auto res = cli.Get(path);
 	}
 	else if (msgType == "group")
 	{
-		string http = "/send_group_msg?group_id=" + groupId + "&message=" + msg;
+		http = "/send_group_msg?group_id=" + groupId + "&message=" + msg;
 		const char* path = http.c_str();
-		httplib::Client cli("127.0.0.1:5700");
 		auto res = cli.Get(path);
 	}
 	return;
+}
+json msgAPI::groupList(string group_id, bool no_cache)
+{
+	string a;
+	if (no_cache) { a = "true"; }else{ a = "false"; }
+	http = "/get_group_member_list?group_id=" + group_id + "&no_cache=" + a;
+	auto res = cli.Get(http.c_str());
+	json resJson = json::parse(res->body.begin(), res->body.end());
+	return resJson;
 }
 
 inline void msgCut(string message,string username)
@@ -503,7 +511,7 @@ inline int websocketsrv()
 						if (message.find("[CQ:") == message.npos&&message.find("[mirai:")==message.npos)
 						{
 							if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
-							else if(message.substr(6,1)!=""){ message = message.substr(6, message.length()); }
+							else if(message.substr(6,1)!=" "){ message = message.substr(6, message.length()); }
 							string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
 							sendMsg.groupMsg(GROUPID, msg);
 							try {
@@ -553,7 +561,7 @@ inline int websocketsrv()
 							a.close();
 						}
 						catch (...) { XboxName = "未绑定"+ userid ; }
-						string msg = XboxName + "离开了我们%0A已自动删除白名单";
+						string msg = XboxName + "(QQ"+userid+")离开了我们 %0A已自动删除白名单";
 						sendmsg.groupMsg(GROUPID, msg);
 						msg = "whitelist remove " + XboxName;
 						Level::runcmd(msg);
@@ -562,34 +570,90 @@ inline int websocketsrv()
 					{
 						msgAPI sendMsg;
 						string XboxName;
-						try
-						{
-							XboxName = BindID[userid];
-						}
-						catch (...)
+						if (BindID[userid].empty())
 						{
 							XboxName = "未绑定";
+						}
+						else
+						{
+							XboxName = BindID[userid];
 						}
 						string msg = "玩家[CQ:at,qq=" + userid + "],你的绑定是: " + XboxName;
 						sendMsg.groupMsg(GROUPID, msg);
 
 					}
-					if (message.find("查询绑定") == 0 && message.length() > 13&& OpCheck(userid, role) == true)
+					if (message.find("删除绑定") == 0 && message.length() > 12 && OpCheck(userid, role) == true)
 					{
-						message = message.substr(13, message.length());
+						if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
+						else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
+						msgAPI sendmsg;
 						string XboxName;
-						try
-						{
+						string msg;
+						try {
 							XboxName = BindID[message];
+							BindID.erase(BindID.find(message));
+							BindID.erase(BindID.find(XboxName));
+							msg = "whitelist remove " + XboxName;
+							Level::runcmd(msg);
+							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+							a << std::setw(4) << BindID << std::endl;
+							a.close();
+							msg = "已删除玩家 " + XboxName + " 的绑定和白名单";
 						}
-						catch (...)
+						catch (...) { XboxName = "未绑定" + userid; msg = "玩家 [CQ:at,qq=" + message + "] 未绑定"; }
+						sendmsg.groupMsg(GROUPID, msg);
+
+					}
+					if (message.find("查询绑定") == 0 && message.length() > 12&& OpCheck(userid, role) == true)
+					{
+						if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
+						else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
+						string XboxName;
+						if (BindID[userid].empty())
 						{
 							XboxName = "未绑定";
+						}
+						else
+						{
+							XboxName = BindID[message];
 						}
 						string msg = "玩家 "+message+" 的绑定是: " + XboxName;
 						msgAPI sendMsg;
 						sendMsg.groupMsg(GROUPID, msg);
 
+					}
+					if (message == "未绑定名单" && OpCheck(userid, role) == true)
+					{
+						msgAPI sendMsg;
+						json nameList = sendMsg.groupList(GROUPID, true);
+						string Num="摸鱼人员名单:\n";
+						for (json::iterator it = nameList["data"].begin(); it != nameList["data"].end(); ++it) {
+							json secList = it.value();
+							string user_id = to_string(secList["user_id"]);
+							string noneNickname = secList["nickname"];
+							if(BindID[user_id].empty()==true)
+							{ Num = Num + "QQ:" + user_id + "," + "群名称:"+noneNickname + "\n"; }
+						}
+						ofstream Text(".\\plugins\\X-Robot\\NoBindList.txt");
+						Text << Num << endl;
+						Text.close();
+
+						////////////////////////删除旧文件
+						auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID);
+						json FileList = json::parse(res->body.begin(), res->body.end());
+						for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
+							json secList = it.value();
+							if (secList["file_name"] == "摸鱼人员名单.txt")
+							{
+								string file_id = secList["file_id"];
+								int busid = secList["busid"];
+								cli.Get("/delete_group_file?group_id=" + GROUPID + "&file_id=" + file_id + "&busid=" + to_string(busid));
+								break;
+							}
+						}
+						//////////////////上传新文件
+						cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt");
+						system("powershell rm plugins\\X-Robot\\NoBindList.txt");
 					}
 
 					//自定义指令集
