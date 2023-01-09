@@ -1,23 +1,24 @@
 {
-	"QQ_group_id": 722047078,
-	"serverName": "Your Server Name",
-	"port": "5701",
-	"manager_port": "5702",
-	"settings": {
-		"join/escape": true,
-		"with_chat": false,
-		"QQForward": true,
-		"MCForward": true,
-		"WhitelistAdd": true,
-		"CommandForward": true,
-		"list": true,
-		"SrvInfo": true,
-		"messageTime": 60
-	},
-	"manager": {
-		"cqhttp_config": false,
-		"backup_interval": 24,
-		"multi_server": false,
-		"start_mode": false
-	}
+  "manager": {
+    "cqhttp_config": false,
+    "backup_interval": 24,
+    "multi_server": false,
+    "start_mode": false
+  },
+  "manager_port": "5702",
+  "port": "5701",
+  "QQ_group_id": 722047078,
+  "serverName": "Your Server Name",
+  "accessToken": "",
+  "settings": {
+    "join/escape": true,
+    "with_chat": false,
+    "QQForward": true,
+    "MCForward": true,
+    "WhitelistAdd": true,
+    "CommandForward": true,
+    "list": true,
+    "SrvInfo": true,
+    "messageTime": 60
+  }
 }

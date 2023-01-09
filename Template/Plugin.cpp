@@ -53,6 +53,7 @@ DWORD Start;
 DWORD timeStart;
 string message;
 string http;
+string accessToken;
 httplib::Client cli("127.0.0.1:5700");
 
 using namespace std;
@@ -101,6 +102,10 @@ void msgAPI::privateMsg(string QQnum, string msg)
 void msgAPI::groupMsg(string group_id, string msg)
 {
 	http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
+	if (accessToken != "")
+	{
+		http = http + "&access_token=" + accessToken;
+	}
 	const char* path = http.c_str();
 	auto res = cli.Get(path);
 }
@@ -125,6 +130,10 @@ json msgAPI::groupList(string group_id, bool no_cache)
 	string a;
 	if (no_cache) { a = "true"; }else{ a = "false"; }
 	http = "/get_group_member_list?group_id=" + group_id + "&no_cache=" + a;
+	if (accessToken != "")
+	{
+		http = http + "&access_token=" + accessToken;
+	}
 	auto res = cli.Get(http.c_str());
 	json resJson = json::parse(res->body.begin(), res->body.end());
 	return resJson;
@@ -433,7 +442,7 @@ inline int websocketsrv()
 							try
 							{
 								int playerOp = op[userid];
-								string cmdMsg = message.substr(5, message.length());
+								string cmdMsg = message.substr(1, message.length());
 								Level::runcmd(cmdMsg);
 							}
 							catch (...)
@@ -609,7 +618,7 @@ inline int websocketsrv()
 						if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
 						else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
 						string XboxName;
-						if (BindID[userid].empty())
+						if (BindID[message].empty())
 						{
 							XboxName = "未绑定";
 						}
@@ -617,7 +626,7 @@ inline int websocketsrv()
 						{
 							XboxName = BindID[message];
 						}
-						string msg = "玩家 "+message+" 的绑定是: " + XboxName;
+						string msg = "玩家 "+ message+" 的绑定是: " + XboxName;
 						msgAPI sendMsg;
 						sendMsg.groupMsg(GROUPID, msg);
 
@@ -639,7 +648,7 @@ inline int websocketsrv()
 						Text.close();
 
 						////////////////////////删除旧文件
-						auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID);
+						auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID + "&access_Token=" + accessToken);
 						json FileList = json::parse(res->body.begin(), res->body.end());
 						for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
 							json secList = it.value();
@@ -647,12 +656,17 @@ inline int websocketsrv()
 							{
 								string file_id = secList["file_id"];
 								int busid = secList["busid"];
-								cli.Get("/delete_group_file?group_id=" + GROUPID + "&file_id=" + file_id + "&busid=" + to_string(busid));
+								http = "/delete_group_file?group_id=" + GROUPID + "&file_id=" + file_id + "&busid=" + to_string(busid);
+								if (accessToken != "")
+								{
+									http = http + "&access_token=" + accessToken;
+								}
+								cli.Get(http);
 								break;
 							}
 						}
 						//////////////////上传新文件
-						cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt");
+						cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt&access_Token=" + accessToken);
 						system("powershell rm plugins\\X-Robot\\NoBindList.txt");
 					}
 
@@ -721,6 +735,7 @@ void PluginInit()
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
 	port = info["port"];
+	accessToken = info["accessToken"];
 
 	with_chat = info["settings"]["with_chat"];
 	join_escape = info["settings"]["join/escape"];
@@ -747,7 +762,6 @@ void PluginInit()
 	fstream OPFile;
 	OPFile.open(".\\plugins\\X-Robot\\op.json");
 	OPFile >> op;
-
 
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket

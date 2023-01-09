@@ -31,6 +31,8 @@ DWORD timeStart = 0;
 int interval = 0;
 json op;
 bool start_mode;
+httplib::Client cli("127.0.0.1:5700");
+string accessToken;
 
 //go-cqhttp的API封装
 class msgAPI
@@ -45,15 +47,13 @@ void msgAPI::privateMsg(string QQnum, string msg)
 {
 	string http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
 	const char* path = http.c_str();
-	httplib::Client cli("127.0.0.1:5700");
 	auto res = cli.Get(path);
 
 }
 void msgAPI::groupMsg(string group_id, string msg)
 {
-	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
+	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg + "&access_Token=" + accessToken;
 	const char* path = http.c_str();
-	httplib::Client cli("127.0.0.1:5700");
 	auto res = cli.Get(path);
 }
 void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
@@ -62,14 +62,12 @@ void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
 	{
 		string http = "/send_private_msg?user_id=" + id + "&message=" + msg;
 		const char* path = http.c_str();
-		httplib::Client cli("127.0.0.1:5700");
 		auto res = cli.Get(path);
 	}
 	else if (msgType == "group")
 	{
 		string http = "/send_group_msg?group_id=" + groupId + "&message=" + msg;
 		const char* path = http.c_str();
-		httplib::Client cli("127.0.0.1:5700");
 		auto res = cli.Get(path);
 	}
 	return;
@@ -118,6 +116,7 @@ string UTF8_2_GBK(string utf8Str)
 
 void lunch()
 {
+	Sleep(5000);
 	if (start_mode)
 	{
 		system("start .\\BDS-Deamon.cmd");
@@ -160,6 +159,22 @@ inline bool OpCheck(string userid, string role)
 			return false;
 		}
 	}
+}
+
+void rec()
+{
+	Sleep(5000);
+	system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
+	msgAPI msgSend;
+	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("回档完成,正在重启服务器"));
+	system("start .\\BDS-Deamon.cmd");
+}
+void bak()
+{
+	system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
+	system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
+	msgAPI msgSend;
+	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
 }
 
 
@@ -294,25 +309,19 @@ reload:WSADATA wsaData;
 				{
 					if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
 					{
-						Sleep(300);
 						cout << "正在开服" << endl;
 						thread lunchSrv(lunch);
 						lunchSrv.detach();
 					}
 					if (message == "backup" && OpCheck(userid, role) == true)
 					{
-						system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
-						system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
-						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
+						thread bakTh(bak);
+						bakTh.detach();
 					}
 					if (message == "recovery" && OpCheck(userid, role) == true)
 					{
-						Sleep(500);
-						system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
-						msgAPI msgSend;
-						msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("回档完成,正在重启服务器"));
-						system("start .\\BDS-Deamon.cmd");
+						thread recTh(rec);
+						recTh.detach();
 					}
 				}
 				string sedbuf = "HTTP/1.1 200 OK\r\n";
@@ -403,6 +412,7 @@ a:Sleep(60000);
 int main()
 {
 	system("chcp 936");
+	cli.set_bearer_token_auth("TendedGalaxy522");
 	json info;
 	fstream infoFile;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
@@ -414,6 +424,7 @@ int main()
 	port = info["manager_port"];
 	start_mode = info["manager"]["start_mode"];
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
+	accessToken = info["accessToken"];
 	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();
 
