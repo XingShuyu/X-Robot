@@ -58,15 +58,14 @@ httplib::Client cli("127.0.0.1:5700");
 
 using namespace std;
 
-Logger logger("Robot");
-Logger Ilog("X-Robot");
-
+Logger FileLog("X-Robot");
+Logger XLog("X-Robot");
 
 //原来在dllmain中的版本检查
 
 void CheckProtocolVersion()
 {
-
+	Logger logger("X-Robot");
 #ifdef TARGET_BDS_PROTOCOL_VERSION
 
 	auto current_protocol = ll::getServerProtocolVersion();
@@ -177,7 +176,8 @@ inline void msgCut(string message,string username)
 	if (message.find("CQ:") == message.npos)
 	{
 		sendmsg = serverName+":<" + username + ">" + message;
-		Ilog.info("转发消息:" + sendmsg);
+		XLog.info("转发消息:" + sendmsg);
+		FileLog.info("[转发消息]" + sendmsg);
 		//cout << "转发消息：" << sendmsg << endl;
 		Level::broadcastText(sendmsg, (TextType)0);
 
@@ -385,6 +385,19 @@ inline int websocketsrv()
 				string jsonmsg = recvbuf;
 				jsonmsg = jsonmsg.substr(0, iResult);
 				jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find_last_of("}")-4);
+				if (jsonmsg.find("\"meta_event_type\":\"heartbeat\"") == jsonmsg.npos)
+				{
+					struct _stat info;
+					_stat(".\\plugins\\X-Robot\\LastestLog.txt", &info);
+					int size = info.st_size;
+					if (size / 1024 / 1024 > 10) {
+						ofstream a;
+						a.open(".\\plugins\\X-Robot\\LastestLog.txt");
+						a << "";
+						a.close();
+					}
+					FileLog.info("[源数据]" + jsonmsg);
+				}
 				//cout <<"/////////////////////////////" << jsonmsg << "////////////////////////////////" << endl;
 					// parse explicitly
 				json jm;
@@ -641,14 +654,16 @@ inline int websocketsrv()
 							string user_id = to_string(secList["user_id"]);
 							string noneNickname = secList["nickname"];
 							if(BindID[user_id].empty()==true)
-							{ Num = Num + "QQ:" + user_id + "," + "群名称:"+noneNickname + "\n"; }
+							{ 
+								Num = Num + "QQ:" + user_id + "," + "群名称:"+noneNickname + "\n"; 
+							}
 						}
 						ofstream Text(".\\plugins\\X-Robot\\NoBindList.txt");
 						Text << Num << endl;
 						Text.close();
 
 						////////////////////////删除旧文件
-						auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID + "&access_Token=" + accessToken);
+						auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID + "&access_token=" + accessToken);
 						json FileList = json::parse(res->body.begin(), res->body.end());
 						for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
 							json secList = it.value();
@@ -666,7 +681,7 @@ inline int websocketsrv()
 							}
 						}
 						//////////////////上传新文件
-						cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt&access_Token=" + accessToken);
+						cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt&access_token=" + accessToken);
 						system("powershell rm plugins\\X-Robot\\NoBindList.txt");
 					}
 
@@ -763,6 +778,17 @@ void PluginInit()
 	OPFile.open(".\\plugins\\X-Robot\\op.json");
 	OPFile >> op;
 
+	//log系统初始化
+	{
+		ofstream a;
+		a.open(".\\plugins\\X-Robot\\LastestLog.txt");
+		a << "";
+		a.close();
+	}
+	FileLog.setFile(".\\plugins\\X-Robot\\LastestLog.txt");
+	FileLog.info("Log开始写入");
+	FileLog.consoleLevel = 0;
+
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	thread tl(websocketsrv);
@@ -772,7 +798,7 @@ reBoot:try
 	}
 	catch(...)
 	{
-		cout << "机器人发生崩溃!正在进行重启" << endl << "最后一次收到的消息是:" << message << endl;
+		cout << "机器人发生崩溃!正在进行重启" << endl;
 		goto reBoot;
 	}
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)

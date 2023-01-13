@@ -33,6 +33,7 @@ json op;
 bool start_mode;
 httplib::Client cli("127.0.0.1:5700");
 string accessToken;
+string SaveName;
 
 //go-cqhttp的API封装
 class msgAPI
@@ -52,7 +53,11 @@ void msgAPI::privateMsg(string QQnum, string msg)
 }
 void msgAPI::groupMsg(string group_id, string msg)
 {
-	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg + "&access_Token=" + accessToken;
+	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
+	if (accessToken != "")
+	{
+		http = http + "&access_token=" + accessToken;
+	}
 	const char* path = http.c_str();
 	auto res = cli.Get(path);
 }
@@ -113,6 +118,24 @@ string UTF8_2_GBK(string utf8Str)
 }
 
 
+void rec()
+{
+	Sleep(5000);
+	string cmd = "xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\" + SaveName + "\" /s /y";
+	system(cmd.c_str());
+	msgAPI msgSend;
+	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("回档完成,正在重启服务器"));
+	system("start .\\BDS-Deamon.cmd");
+}
+void bak()
+{
+	system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
+	string cmd = "xcopy \"worlds\\" + SaveName + "\" plugins\\X-Robot\\customBackup\\ /s /y";
+	system(cmd.c_str());
+	msgAPI msgSend;
+	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
+}
+
 
 void lunch()
 {
@@ -130,7 +153,7 @@ void lunch()
 int autoBackup()
 {
 Backup:Sleep(backupTime * 3600 * 1000);
-	system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
+	bak();
 	goto Backup;
 }
 
@@ -161,21 +184,6 @@ inline bool OpCheck(string userid, string role)
 	}
 }
 
-void rec()
-{
-	Sleep(5000);
-	system("xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\Bedrock level\" /s /y");
-	msgAPI msgSend;
-	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("回档完成,正在重启服务器"));
-	system("start .\\BDS-Deamon.cmd");
-}
-void bak()
-{
-	system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
-	system("xcopy \"worlds\\Bedrock level\" plugins\\X-Robot\\customBackup\\ /s /y");
-	msgAPI msgSend;
-	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
-}
 
 
 
@@ -427,6 +435,24 @@ int main()
 	accessToken = info["accessToken"];
 	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();
+
+	fstream SvrPro;
+	SvrPro.open(".\\server.properties");
+	while(!SvrPro.eof())
+	{
+		char a[256];
+		SvrPro.getline(a, 256);
+		SaveName = a;
+		if (SaveName.find("level-name=")!=SaveName.npos)
+		{
+			SaveName = SaveName.substr(11, SaveName.length());
+			cout << SaveName << endl;
+			break;
+		}
+
+	}
+	//SaveName = SaveName.substr(SaveName.find_first_of("level-name="), SaveName.find_first_of("# Allowed values: Any string without semicolon symbol or symbols illegal for file name"));
+
 
 
 	fstream OPFile;
