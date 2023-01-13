@@ -536,7 +536,7 @@ inline int websocketsrv()
 							else if(message.substr(6,1)!=" "){ message = message.substr(6, message.length()); }
 							string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
 							sendMsg.groupMsg(GROUPID, msg);
-							try {
+							if (!BindID[userid].empty()) {
 								string XboxName = "";
 								XboxName = BindID[userid];
 								BindID.erase(BindID.find(userid));
@@ -546,15 +546,14 @@ inline int websocketsrv()
 								a.close();
 								msg = "whitelist remove \"" + XboxName + "\"";
 								Level::runcmd(msg);
-								msg = "whitelist add \"" + message + "\"";
-								Level::runcmd(msg);
 							}
-							catch (...) {};
 							BindID[userid] = message;
 							BindID[message] = userid;
 							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 							a << std::setw(4) << BindID << std::endl;
 							a.close();
+							msg = "whitelist add \"" + message + "\"";
+							Level::runcmd(msg);
 						}
 						else
 						{
