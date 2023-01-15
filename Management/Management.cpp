@@ -27,7 +27,6 @@ using namespace std;
 using namespace YAML;
 using namespace nlohmann;
 
-DWORD timeStart = 0;
 int interval = 0;
 json op;
 bool start_mode;
@@ -153,7 +152,11 @@ void lunch()
 int autoBackup()
 {
 Backup:Sleep(backupTime * 3600 * 1000);
-	bak();
+	system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
+	string cmd = "xcopy \"worlds\\" + SaveName + "\" plugins\\X-Robot\\customBackup\\ /s /y";
+	system(cmd.c_str());
+	msgAPI msgSend;
+	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
 	goto Backup;
 }
 
@@ -267,6 +270,7 @@ reload:WSADATA wsaData;
 
 			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
 			if (iResult > 0) {
+
 				string jsonmsg = recvbuf;
 				jsonmsg = jsonmsg.substr(0, iResult);
 				jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find("}"));
@@ -309,10 +313,6 @@ reload:WSADATA wsaData;
 				try { notice_type = jm["notice_type"]; }
 				catch (...) { notice_type = ""; }
 				//消息处理
-				if (post_type == "\"meta_event\"")
-				{
-					timeStart = GetTickCount64();
-				}
 				if (groupid == GROUPIDINT)
 				{
 					if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
@@ -401,21 +401,6 @@ int startCq()
 
 
 
-inline bool CQSelfChecker()//cq启动自检
-{
-a:Sleep(60000);
-	while ((GetTickCount64() - timeStart) <= 3000 * interval)
-	{
-		Sleep(1000);
-	}
-	cout << "CQ疑似异常，尝试启动CQ...." << endl;
-	system("tskill go-cqhttp");
-	thread tl(startCq);
-	tl.detach();
-	goto a;
-}
-
-
 
 int main()
 {
@@ -482,8 +467,6 @@ int main()
 		}
 		thread tl(startCq);
 		tl.detach();
-		thread Protect(CQSelfChecker);
-		Protect.detach();
 	}
 	thread backupTl(autoBackup);
 	backupTl.detach();

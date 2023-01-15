@@ -719,7 +719,13 @@ inline int websocketsrv()
 
 				}
 				catch (...) {
-					cout << "机器人发生崩溃qwq，请检查错误日志" << endl;
+					cout << "机器人发生崩溃qwq，正在生成错误日志" << endl;
+					SYSTEMTIME sys;
+					GetLocalTime(&sys);
+					string cmd = "echo f | xcopy .\\plugins\\X-Robot\\LastestLog.txt .\\plugins\\X-Robot\\CrashLog\\CrashLog-" + to_string(sys.wYear) + "-" + to_string(sys.wMonth) + "-" + to_string(sys.wDay) + "-" + to_string(sys.wHour) + ".txt /y";
+					cout << cmd;
+					FileLog.error("机器人崩溃!");
+					system(cmd.c_str());
 				}
 			}
 
