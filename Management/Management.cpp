@@ -34,6 +34,7 @@ httplib::Client cli("127.0.0.1:5700");
 string accessToken;
 string SaveName;
 
+
 //go-cqhttpµÄAPI·â×°
 class msgAPI
 {
