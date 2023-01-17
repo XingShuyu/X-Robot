@@ -810,6 +810,16 @@ void PluginInit()
 	FileLog.info("Log开始写入");
 	FileLog.consoleLevel = 0;
 
+	//消息转发黑名单读取
+	string BlackMsg;
+	fstream BlackCmd;
+	BlackCmd.open(".\\plugins\\X-Robot\\BlackMsg.txt");
+	while (!BlackCmd.eof())
+	{
+		char a[256];
+		BlackCmd.getline(a, 256);
+		BlackMsg = BlackMsg + "\n" + a;
+	}
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	thread tl(websocketsrv);
@@ -836,12 +846,15 @@ void PluginInit()
 	}
 	if (CommandForward)
 	{
-		Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
+		Event::ConsoleOutputEvent::subscribe([BlackMsg](const Event::ConsoleOutputEvent& ev)
 			{
 				msgAPI msgSend;
-				cmdMsg = ev.mOutput;
-				string outPut = serverName + ": " + ev.mOutput;
-				msgSend.groupMsg(GROUPID, outPut);
+				cmdMsg = ev.mOutput.substr(0,ev.mOutput.length()-1);
+				if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
+				{
+					string outPut = serverName + ": " + ev.mOutput;
+					msgSend.groupMsg(GROUPID, outPut);
+				}
 				return true;
 			});
 	}

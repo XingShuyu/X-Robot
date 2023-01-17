@@ -33,7 +33,7 @@ bool start_mode;
 httplib::Client cli("127.0.0.1:5700");
 string accessToken;
 string SaveName;
-
+string backupList[5];
 
 //go-cqhttp的API封装
 class msgAPI
@@ -118,24 +118,6 @@ string UTF8_2_GBK(string utf8Str)
 }
 
 
-void rec()
-{
-	Sleep(5000);
-	string cmd = "xcopy plugins\\X-Robot\\customBackup\\ \"worlds\\" + SaveName + "\" /s /y";
-	system(cmd.c_str());
-	msgAPI msgSend;
-	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("回档完成,正在重启服务器"));
-	system("start .\\BDS-Deamon.cmd");
-}
-void bak()
-{
-	system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
-	string cmd = "xcopy \"worlds\\" + SaveName + "\" plugins\\X-Robot\\customBackup\\ /s /y";
-	system(cmd.c_str());
-	msgAPI msgSend;
-	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
-}
-
 
 void lunch()
 {
@@ -148,17 +130,6 @@ void lunch()
 	{
 		system(".\\BDS-Deamon.cmd");
 	}
-}
-
-int autoBackup()
-{
-Backup:Sleep(backupTime * 3600 * 1000);
-	system("powershell rm plugins\\X-Robot\\customBackup -Recurse");
-	string cmd = "xcopy \"worlds\\" + SaveName + "\" plugins\\X-Robot\\customBackup\\ /s /y";
-	system(cmd.c_str());
-	msgAPI msgSend;
-	msgSend.groupMsg(to_string(GROUPIDINT), GBK_2_UTF8("备份完成"));
-	goto Backup;
 }
 
 inline bool OpCheck(string userid, string role)
@@ -322,16 +293,6 @@ reload:WSADATA wsaData;
 						thread lunchSrv(lunch);
 						lunchSrv.detach();
 					}
-					if (message == "backup" && OpCheck(userid, role) == true)
-					{
-						thread bakTh(bak);
-						bakTh.detach();
-					}
-					if (message == "recovery" && OpCheck(userid, role) == true)
-					{
-						thread recTh(rec);
-						recTh.detach();
-					}
 				}
 				string sedbuf = "HTTP/1.1 200 OK\r\n";
 				// Echo the buffer back to the sender
@@ -469,8 +430,6 @@ int main()
 		thread tl(startCq);
 		tl.detach();
 	}
-	thread backupTl(autoBackup);
-	backupTl.detach();
 	websocketsrv();
 }
 
