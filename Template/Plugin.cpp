@@ -676,6 +676,11 @@ inline int websocketsrv()
 						{
 							if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
 							else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
+							if (message.find("[CQ:at,qq=") != message.npos)
+							{
+								message = message.substr(10, message.length() - 11);
+							}
+							cout << message << endl;
 							string XboxName;
 							if (BindID[message].empty())
 							{
