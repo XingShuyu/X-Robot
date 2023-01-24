@@ -680,7 +680,6 @@ inline int websocketsrv()
 							{
 								message = message.substr(10, message.length() - 11);
 							}
-							cout << message << endl;
 							string XboxName;
 							if (BindID[message].empty())
 							{
