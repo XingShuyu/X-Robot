@@ -98,7 +98,7 @@ void msgAPI::privateMsg(string QQnum, string msg)
 	auto res = cli.Get(path);
 
 }
-void msgAPI::groupMsg(string group_id, string msg)
+void groupMsgSend(string group_id, string msg)
 {
 	http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
 	if (accessToken != "")
@@ -107,6 +107,11 @@ void msgAPI::groupMsg(string group_id, string msg)
 	}
 	const char* path = http.c_str();
 	auto res = cli.Get(path);
+}
+void msgAPI::groupMsg(string group_id, string msg)
+{
+	thread groupMsgTh(groupMsgSend, group_id, msg);
+	groupMsgTh.detach();
 }
 void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
 {
@@ -144,9 +149,9 @@ inline void msgCut(string message,string username)
 	msgcut:if (message.find("[CQ:image") != message.npos)
 	{
 		string cqat = message.substr(message.find("[CQ:image"), message.length());
-		int CQlocate = message.find("[CQ:image");
+		int CQlocate = (int)message.find("[CQ:image");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
-		int CQlen = CQlocate+cqat.length()+1;
+		int CQlen = CQlocate+ (int)cqat.length()+1;
 		cqat = "[图片]";
 		message = message.replace(CQlocate, CQlen, cqat);
 		goto msgcut;
@@ -154,9 +159,9 @@ inline void msgCut(string message,string username)
 	else if (message.find("[CQ:at,qq=") != message.npos)
 	{
 		string cqat = message.substr(message.find("[CQ:at,qq="), message.length());
-		int CQlocate = message.find("[CQ:at,qq=");
+		int CQlocate = (int)message.find("[CQ:at,qq=");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
-		int CQlen = cqat.length() + CQlocate + 1;
+		int CQlen = (int)cqat.length() + CQlocate + 1;
 		int CQLEN = CQlen - 1;
 		cqat = cqat.substr(10, CQLEN);
 		cqat = "@" + cqat;
@@ -166,9 +171,9 @@ inline void msgCut(string message,string username)
 	else if (message.find("[CQ:face,id=") != message.npos)
 	{
 		string cqat = message.substr(message.find("[CQ:face,id="), message.length());
-		int CQlocate = message.find("[CQ:face,id=");
+		int CQlocate = (int)message.find("[CQ:face,id=");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
-		int CQlen = cqat.length() + CQlocate + 1;
+		int CQlen = (int)cqat.length() + CQlocate + 1;
 		cqat = "[QQ表情]";
 		message = message.replace(CQlocate, CQlen, cqat);
 		goto msgcut;
@@ -187,7 +192,7 @@ inline void msgCut(string message,string username)
 inline void listPlayer()
 {
 	vector<Player*> allPlayer = Level::getAllPlayers();
-	int playerNum = allPlayer.size();
+	int playerNum = (int)allPlayer.size();
 	int i = 0;
 	string msg = serverName + "服务器在线玩家:%0A" + to_string(playerNum) + "位在线玩家%0A";
 	if (playerNum != 0)
@@ -202,7 +207,7 @@ inline void listPlayer()
 	msgAPI sendMsg;
 	sendMsg.groupMsg(GROUPID, msg);
 }
-inline int customMsg(string message,string username,string cmdMsg,string userid)
+inline void customMsg(string message,string username,string cmdMsg,string userid)
 {
 	fstream messageFile;
 	messageFile.open(".\\plugins\\X-Robot\\Message.json");
@@ -274,31 +279,61 @@ inline bool OpCheck(string userid,string role)
 			return false;
 		}
 	}
-	else if (op["OP"] == 1)
+	else if (op["OP"] == 1&&op[userid].empty())
 	{
-		try
-		{
-			int playerOp = op[userid];
-			return true;
-		}
-		catch (...)
-		{
-			return false;
-		}
+		return false;
+	}
+	else if (op["OP"] == 1 && !op[userid].empty())
+	{
+		return true;
 	}
 }
 
 inline bool timeChecker()
 {
-	DWORD nowTime = GetTickCount64();
-	if ((nowTime - timeStart) > (1000 * messageTime))
+	DWORD nowTime = unsigned(GetTickCount64());
+	if ((nowTime - timeStart) > unsigned(1000 * messageTime))
 	{
-		timeStart = GetTickCount64();
+		timeStart = unsigned(GetTickCount64());
 		return true;
 	}
 	else
 	{
 		return false;
+	}
+}
+
+inline json BlackBEChecker(string userid) {
+	httplib::Client BlackBe("https://api.blackbe.work");
+	http = "/openapi/v3/check/?qq=" + userid;
+	string body;
+	auto res = BlackBe.Get(http,
+		[&](const char* data, size_t data_length) {
+			body.append(data, data_length);
+	return true;
+		});
+	json BlackJson = json::parse(body.begin(), body.end());
+	return BlackJson;
+}
+inline json BlackBEChecker(string userid,string XboxId) {
+	httplib::Client BlackBe("https://api.blackbe.work");
+	http = "/openapi/v3/check/?qq=" + userid + "&name=" + XboxId;
+	string body;
+	auto res = BlackBe.Get(http,
+		[&](const char* data, size_t data_length) {
+			body.append(data, data_length);
+	return true;
+		});
+	json BlackJson = json::parse(body.begin(), body.end());
+	return BlackJson;
+}
+
+inline void ConsoleEvent(string BlackMsg) {
+	msgAPI msgSend;
+	if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
+	{
+		string outPut = serverName + ": " + cmdMsg;
+		msgSend.groupMsg(GROUPID, outPut);
 	}
 }
 
@@ -487,7 +522,7 @@ inline int websocketsrv()
 							MEMORYSTATUSEX statex;
 							statex.dwLength = sizeof(statex);
 							GlobalMemoryStatusEx(&statex);
-							DWORD End = GetTickCount64();
+							DWORD End = unsigned(GetTickCount64());
 							cpu_usage_ratio = cpu_usage_ratio * 100;
 							int cpu_usage = cpu_usage_ratio;
 							string msg = serverName + "服务器信息" + "%0A服务器版本:" + ll::getBdsVersion() + "%0ABDS协议号:" + to_string(ll::getServerProtocolVersion()) + "%0ALL版本号:" + ll::getLoaderVersionString() + " %0A进程PID: " + to_string(current_pid) + " %0ACPU使用率 : " + to_string(cpu_usage) + "%25%0ACPU核数:" + to_string(GetCpuNum()) + " %0A内存占用 : " + to_string(statex.dwMemoryLoad) + " %25%0A总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB%0A剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB%0A服务器启动时间:" + to_string((End - Start) / 1000 / 60 / 60 / 24) + "天" + to_string(((End - Start) / 1000 / 60 / 60) % 24) + "小时" + to_string(((End - Start) / 1000 / 60) % 60) + "分钟";
@@ -508,11 +543,13 @@ inline int websocketsrv()
 						if (message.find("%") == 0 && message.length() >= 3 && with_chat == true && QQforward == true)
 						{
 							message = message.substr(1, message.length());
-							msgCut(message, username);
+							thread msgCutTh(msgCut, message, username);//多线程处理
+							msgCutTh.detach();
 						}
 						else if (with_chat == false && QQforward == true)
 						{
-							msgCut(message, username);
+							thread msgCutTh(msgCut, message, username);//多线程处理
+							msgCutTh.detach();
 						}
 						if (message == "关服" && role == "owner")
 						{
@@ -536,26 +573,34 @@ inline int websocketsrv()
 							{
 								if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
 								else if (message.substr(6, 1) != " ") { message = message.substr(6, message.length()); }
-								string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
-								sendMsg.groupMsg(GROUPID, msg);
-								if (!BindID[userid].empty()) {
-									string XboxName = "";
-									XboxName = BindID[userid];
-									BindID.erase(BindID.find(userid));
-									BindID.erase(BindID.find(XboxName));
+								json BlackBe = BlackBEChecker(userid,message);
+								if (!BlackBe["data"]["exist"])
+								{
+									string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
+									sendMsg.groupMsg(GROUPID, msg);
+									if (!BindID[userid].empty()) {
+										string XboxName = "";
+										XboxName = BindID[userid];
+										BindID.erase(BindID.find(userid));
+										BindID.erase(BindID.find(XboxName));
+										ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+										a << std::setw(4) << BindID << std::endl;
+										a.close();
+										msg = "whitelist remove \"" + XboxName + "\"";
+										Level::runcmd(msg);
+									}
+									BindID[userid] = message;
+									BindID[message] = userid;
 									ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 									a << std::setw(4) << BindID << std::endl;
 									a.close();
-									msg = "whitelist remove \"" + XboxName + "\"";
+									msg = "whitelist add \"" + message + "\"";
 									Level::runcmd(msg);
 								}
-								BindID[userid] = message;
-								BindID[message] = userid;
-								ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
-								a << std::setw(4) << BindID << std::endl;
-								a.close();
-								msg = "whitelist add \"" + message + "\"";
-								Level::runcmd(msg);
+								else if (BlackBe["data"]["exist"]) {
+									sendMsg.groupMsg(GROUPID, "玩家[CQ:at,qq=" + userid + "]账号被列于云黑，请用查云黑检查！");
+								}
+
 							}
 							else
 							{
@@ -703,9 +748,9 @@ inline int websocketsrv()
 					}
 					string sedbuf = "HTTP/1.1 200 OK\r\n";
 					// Echo the buffer back to the sender
-					iSendResult = send(ClientSocket, sedbuf.c_str(), sedbuf.length(), 0);
+					iSendResult = send(ClientSocket, sedbuf.c_str(), (int)sedbuf.length(), 0);
 					sedbuf = "Cache-Control:public\r\nContent-Type:text/plain;charset=ASCII\r\nServer:Tengine/1.4.6\r\n\r\n";
-					iSendResult = send(ClientSocket, sedbuf.c_str(), sedbuf.length(), 0);
+					iSendResult = send(ClientSocket, sedbuf.c_str(), (int)sedbuf.length(), 0);
 					if (iSendResult == SOCKET_ERROR) {
 						printf("send failed: %d\n", WSAGetLastError());
 						closesocket(ClientSocket);
@@ -828,8 +873,8 @@ void PluginInit()
 		{
 			msgAPI msgSend;
 			msgSend.groupMsg(GROUPID, "服务器已启动");
-			Start = GetTickCount64();
-			timeStart = GetTickCount64();
+			Start = unsigned(GetTickCount64());
+			timeStart = unsigned(GetTickCount64());
 			return 0;
 		});
 	if(MCforward)
@@ -837,24 +882,26 @@ void PluginInit()
 		Event::PlayerChatEvent::subscribe([](const Event::PlayerChatEvent& ev)
 			{
 				msgAPI msgSend;
-				Player* Player = ev.mPlayer;//获取触发监听的玩家
-				string mMessage= ev.mMessage;
-				string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
-				msgSend.groupMsg(GROUPID, msg);
-				return true;
+		Player* Player = ev.mPlayer;//获取触发监听的玩家
+		string mMessage = ev.mMessage;
+		string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
+		msgSend.groupMsg(GROUPID, msg);
+		return true;
 			});
 	}
 	if (CommandForward)
 	{
 		Event::ConsoleOutputEvent::subscribe([BlackMsg](const Event::ConsoleOutputEvent& ev)
 			{
-				msgAPI msgSend;
+
 				cmdMsg = ev.mOutput.substr(0,ev.mOutput.length()-1);
-				if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
+		thread SendCommand(ConsoleEvent, BlackMsg);
+		SendCommand.detach();
+				/*if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
 				{
 					string outPut = serverName + ": " + ev.mOutput;
 					msgSend.groupMsg(GROUPID, outPut);
-				}
+				}*/
 				return true;
 			});
 	}
