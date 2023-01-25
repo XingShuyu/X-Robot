@@ -801,7 +801,8 @@ inline int websocketsrv()
 						}
 						if (message.find("查云黑") == 0 && message.length() > 9 && OpCheck(userid, role) == true)
 						{
-							BlackBeCheck(message);
+							thread BlackBeCheckTh(BlackBeCheck, message);
+							BlackBeCheckTh.detach();
 						}
 
 
