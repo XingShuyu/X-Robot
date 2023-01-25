@@ -49,12 +49,12 @@ json op;//op鉴定权限
 string port;//服务器端口
 bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand,CommandForward;//配置选择
 string cmdMsg;//控制台消息
-DWORD Start;
-DWORD timeStart;
-string message;
-string http;
-string accessToken;
-httplib::Client cli("127.0.0.1:5700");
+DWORD Start;//获取服务器启动时间
+DWORD timeStart;//防刷屏
+string message;//收到的消息
+string http;//http头(别问我为什么要弄成全局)
+string accessToken;//通信密钥
+httplib::Client cli("127.0.0.1:5700");//gq-cqhttp上报
 
 using namespace std;
 
@@ -183,7 +183,6 @@ inline void msgCut(string message,string username)
 		sendmsg = serverName+":<" + username + ">" + message;
 		XLog.info("转发消息:" + sendmsg);
 		FileLog.info("[转发消息]" + sendmsg);
-		//cout << "转发消息：" << sendmsg << endl;
 		Level::broadcastText(sendmsg, (TextType)0);
 
 	}
@@ -206,7 +205,7 @@ inline void listPlayer()
 	}
 	msgAPI sendMsg;
 	sendMsg.groupMsg(GROUPID, msg);
-}
+}//获取在线玩家
 inline void customMsg(string message,string username,string cmdMsg,string userid)
 {
 	fstream messageFile;
@@ -287,7 +286,7 @@ inline bool OpCheck(string userid,string role)
 	{
 		return true;
 	}
-}
+}//检查是否有op权限
 
 inline bool timeChecker()
 {
@@ -301,8 +300,9 @@ inline bool timeChecker()
 	{
 		return false;
 	}
-}
+}//防刷屏
 
+//获取云黑信息
 inline json BlackBEChecker(string userid) {
 	httplib::Client BlackBe("https://api.blackbe.work");
 	http = "/openapi/v3/check/?qq=" + userid;
@@ -328,6 +328,7 @@ inline json BlackBEChecker(string userid,string XboxId) {
 	return BlackJson;
 }
 
+
 inline void ConsoleEvent(string BlackMsg) {
 	msgAPI msgSend;
 	if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
@@ -335,7 +336,7 @@ inline void ConsoleEvent(string BlackMsg) {
 		string outPut = serverName + ": " + cmdMsg;
 		msgSend.groupMsg(GROUPID, outPut);
 	}
-}
+}//防止命令监听导致掉TPS而建立的新线程
 
 inline int websocketsrv()
 {
@@ -693,7 +694,7 @@ inline int websocketsrv()
 							msgAPI sendMsg;
 							sendMsg.groupMsg(GROUPID, msg);
 
-						}
+						}//查询他人绑定
 						if (message == "未绑定名单" && OpCheck(userid, role) == true)
 						{
 							msgAPI sendMsg;
@@ -775,7 +776,7 @@ inline int websocketsrv()
 					cout << cmd;
 					FileLog.error("机器人崩溃!");
 					system(cmd.c_str());
-				}
+				}//崩溃日志
 			}
 
 			else if (iResult == 0)
