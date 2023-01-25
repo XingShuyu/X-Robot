@@ -303,7 +303,7 @@ inline bool timeChecker()
 }//防刷屏
 
 //获取云黑信息
-inline json BlackBEChecker(string userid) {
+inline json BlackBEGet(string userid) {
 	httplib::Client BlackBe("https://api.blackbe.work");
 	http = "/openapi/v3/check/?qq=" + userid;
 	string body;
@@ -315,7 +315,7 @@ inline json BlackBEChecker(string userid) {
 	json BlackJson = json::parse(body.begin(), body.end());
 	return BlackJson;
 }
-inline json BlackBEChecker(string userid,string XboxId) {
+inline json BlackBEGet(string userid,string XboxId) {
 	httplib::Client BlackBe("https://api.blackbe.work");
 	http = "/openapi/v3/check/?qq=" + userid + "&name=" + XboxId;
 	string body;
@@ -327,7 +327,72 @@ inline json BlackBEChecker(string userid,string XboxId) {
 	json BlackJson = json::parse(body.begin(), body.end());
 	return BlackJson;
 }
-
+inline void BlackBeCheck(string message)
+{
+	if (message.substr(9, 1) == " " && message.length() > 10) { message = message.substr(10, message.length()); }
+	else if (message.substr(9, 1) != " ") { message = message.substr(9, message.length()); }
+	json BlackBeJson;
+	msgAPI sendMsg;
+	if (message.find("[CQ:at,qq=") != message.npos)//查找QQ号
+	{
+		message = message.substr(10, message.length() - 11);
+		if (!BindID[message].empty())//QQ已绑定
+		{
+			string XboxName;
+			XboxName = BindID[message];
+			BlackBeJson = BlackBEGet(message, XboxName);
+		}
+		else {//QQ无绑定
+			BlackBeJson = BlackBEGet(message);
+		}
+	}
+	else//查找XboxId
+	{
+		if (!BindID[message].empty())//XboxID已绑定
+		{
+			string QQid;
+			QQid = BindID[message];
+			BlackBeJson = BlackBEGet(QQid, message);
+		}
+		else//XboxID未绑定
+		{
+			httplib::Client BlackBe("https://api.blackbe.work");
+			http = "/openapi/v3/check/?name="+message;
+			string body;
+			auto res = BlackBe.Get(http,
+				[&](const char* data, size_t data_length) {
+					body.append(data, data_length);
+			return true;
+				});
+			BlackBeJson = json::parse(body.begin(), body.end());
+		}
+	}
+	if (!BlackBeJson["data"]["exist"]) {
+		sendMsg.groupMsg(GROUPID, "玩家不在黑名单中哦");
+	}
+	else if (BlackBeJson["data"]["exist"])
+	{
+		cout << 1 << endl;
+		for (json::iterator it = BlackBeJson["data"]["info"].begin(); it != BlackBeJson["data"]["info"].end(); ++it) {
+			string body = it.value().dump();
+			json secList = json::parse(body.begin(), body.end());
+			string name = secList["name"];
+			cout << 3 << endl;
+			string info = secList["info"];
+			cout << 3 << endl;
+			string url = secList["uuid"];
+			url = "https://blackbe.work/detail/" + url;
+			cout << 3 << endl;
+			string qq = to_string(secList["qq"]);
+			cout << 1 << endl;
+			string level = to_string(secList["level"]);
+			cout << 2 << endl;
+			string msg = "玩家 " + name + " (QQ：" + qq + ")被列于云黑公开库\n危险等级: "+level+"\n封禁原因："+info+"\n详细信息: "+url;
+			cout << 3 << endl;
+			sendMsg.groupMsg(GROUPID, msg);
+		}
+	}
+}
 
 inline void ConsoleEvent(string BlackMsg) {
 	msgAPI msgSend;
@@ -574,7 +639,7 @@ inline int websocketsrv()
 							{
 								if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
 								else if (message.substr(6, 1) != " ") { message = message.substr(6, message.length()); }
-								json BlackBe = BlackBEChecker(userid,message);
+								json BlackBe = BlackBEGet(userid,message);
 								if (!BlackBe["data"]["exist"])
 								{
 									string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
@@ -609,7 +674,6 @@ inline int websocketsrv()
 							}
 
 						}
-
 						if ((notice_type == "group_increase") && whitelistAdd == true)
 						{
 							msgAPI sendMsg;
@@ -734,6 +798,10 @@ inline int websocketsrv()
 							//////////////////上传新文件
 							cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt&access_token=" + accessToken);
 							std::system("powershell rm plugins\\X-Robot\\NoBindList.txt");
+						}
+						if (message.find("查云黑") == 0 && message.length() > 9 && OpCheck(userid, role) == true)
+						{
+							BlackBeCheck(message);
 						}
 
 
