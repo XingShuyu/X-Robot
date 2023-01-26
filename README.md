@@ -126,21 +126,40 @@ op权限就是谁能执行上文的sudo指令
 2. CQ的配置文件中，增加如下
 ```
   - http: # HTTP 通信设置
+      address: 0.0.0.0:5700 # HTTP监听地址
+      timeout: 5      # 反向 HTTP 超时时间, 单位秒，<5 时将被忽略
+      long-polling:   # 长轮询拓展
+        enabled: false       # 是否开启
+        max-queue-size: 2000 # 消息队列大小，0 表示不限制队列大小，谨慎使用
+      middlewares:
+        <<: *default # 引用默认中间件
       post:           # 反向HTTP POST地址列表
-      - url: ''                # 地址
-        secret: ''             # 密钥
-        max-retries: 3         # 最大重试，0 时禁用
-        retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+      #- url: ''                # 地址
+      #  secret: ''             # 密钥
+      #  max-retries: 3         # 最大重试，0 时禁用
+      #  retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
       - url: http://127.0.0.1:5703/ # 地址
         secret: ''                  # 密钥
         max-retries: 0             # 最大重试，0 时禁用
         retries-interval: 0      # 重试时间，单位毫秒，0 时立即
+      
+  - http: # HTTP 通信设置
+      post:           # 反向HTTP POST地址列表
+      #- url: ''                # 地址
+      #  secret: ''             # 密钥
+      #  max-retries: 3         # 最大重试，0 时禁用
+      #  retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+      - url: http://127.0.0.1:5704/ # 地址
+        secret: ''                  # 密钥
+        max-retries: 0             # 最大重试，0 时禁用
+        retries-interval: 0      # 重试时间，单位毫秒，0 时立即
 ```
-其中，5703是你的端口号，可以自行更改，不能是5702，但要与下文的端口一致
+其中，5703,5704是你的端口号，可以自行更改，不能是5701,5702，但要与下文的端口一致
 3. 打开第二个服务器的/BDS/plugins/LL_Robot/RobotInfo.json文件
-4. 将"5701"改为"5703"这里端口可以自己更改，与上文一致即可
+4. 将"5701"改为"5703",将"5702"改为"5704"这里端口可以自己更改，与上文一致即可
 5. 将serverName改为第二个服务器的名字
-6. 保存，启动CQ和两个服务器
+6. 将第二个服务器的multiserver设置为true
+7. 保存，启动两个服务器的manager
 
 >使用第三方软件列表
 
