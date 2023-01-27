@@ -7,12 +7,12 @@
 2. list查在线玩家
 3. QQ中#发送消息到mc
 4. QQ中管理员以上级别"/命令"控制台执行"命令"
-5. 群员退群取消白名单,"绑定 ****"来绑定,"查询绑定"来查询,管理员使用"查询绑定 QQ/XboxID"来查询群成员绑定"
+5. 群员退群取消白名单,"绑定 ****"来绑定,"查询绑定"来查询,管理员使用"查询绑定 atQQ/XboxID"来查询群成员绑定"
 6. 发送"未绑定名单"获取摸鱼人员名单,发送“删除绑定 QQ号”来删除绑定+白名单
 7. 发送"查服"来获取服务器信息
 8. 发送"菜单"获取指令列表
 9. 开服，关服，崩服重启支持
-10. 自动备份存档，QQ群"backup""recovery"来备份和回档
+10. 使用"查云黑 玩家名/at“来查讯是否在云黑
 11. 自定义指令
 
 >选择我们有哪些好处?
@@ -31,7 +31,11 @@
 
 >安装指南
 
+Lip安装（首选）
+1. BDS根目录打开cmd/powershell
+2. 输入```lip install github.com/xingshuyu/x-robot-tth@1.1.0```
 
+传统安装
 1. 在 [Release](https://github.com/XingShuyu/X-Robot/releases)中下载X-Robot.zip，并解压在BDS根目录中，exe和bedrock_server_mod.exe在同一目录
 2. 启动Manager.exe，第一次启动会要求配置，按顺序输入机器人QQ号，QQ密码，QQ群号，服务器名称即可配置完成。机器人已启动
 3. 在服务器配置好后，启动BDS，或者在QQ群里面发“开服”即可启动服务器。看到“服务器已启动”即开服成功。
@@ -122,21 +126,45 @@ op权限就是谁能执行上文的sudo指令
 2. CQ的配置文件中，增加如下
 ```
   - http: # HTTP 通信设置
+      address: 0.0.0.0:5700 # HTTP监听地址
+      timeout: 5      # 反向 HTTP 超时时间, 单位秒，<5 时将被忽略
+      long-polling:   # 长轮询拓展
+        enabled: false       # 是否开启
+        max-queue-size: 2000 # 消息队列大小，0 表示不限制队列大小，谨慎使用
+      middlewares:
+        <<: *default # 引用默认中间件
       post:           # 反向HTTP POST地址列表
-      - url: ''                # 地址
-        secret: ''             # 密钥
-        max-retries: 3         # 最大重试，0 时禁用
-        retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+      #- url: ''                # 地址
+      #  secret: ''             # 密钥
+      #  max-retries: 3         # 最大重试，0 时禁用
+      #  retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
       - url: http://127.0.0.1:5703/ # 地址
         secret: ''                  # 密钥
         max-retries: 0             # 最大重试，0 时禁用
         retries-interval: 0      # 重试时间，单位毫秒，0 时立即
+      
+  - http: # HTTP 通信设置
+      post:           # 反向HTTP POST地址列表
+      #- url: ''                # 地址
+      #  secret: ''             # 密钥
+      #  max-retries: 3         # 最大重试，0 时禁用
+      #  retries-interval: 1500 # 重试时间，单位毫秒，0 时立即
+      - url: http://127.0.0.1:5704/ # 地址
+        secret: ''                  # 密钥
+        max-retries: 0             # 最大重试，0 时禁用
+        retries-interval: 0      # 重试时间，单位毫秒，0 时立即
 ```
-其中，5703是你的端口号，可以自行更改，不能是5702，但要与下文的端口一致
+其中，5703,5704是你的端口号，可以自行更改，不能是5701,5702，但要与下文的端口一致
+
 3. 打开第二个服务器的/BDS/plugins/LL_Robot/RobotInfo.json文件
-4. 将"5701"改为"5703"这里端口可以自己更改，与上文一致即可
+
+4. 将"5701"改为"5703",将"5702"改为"5704"这里端口可以自己更改，与上文一致即可
+
 5. 将serverName改为第二个服务器的名字
-6. 保存，启动CQ和两个服务器
+
+6. 将第二个服务器的multiserver设置为true
+
+7. 保存，启动两个服务器的manager
 
 >使用第三方软件列表
 
