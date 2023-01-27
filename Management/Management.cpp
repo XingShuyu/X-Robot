@@ -30,10 +30,10 @@ using namespace nlohmann;
 int interval = 0;
 json op;
 bool start_mode;
-httplib::Client cli("127.0.0.1:5700");
 string accessToken;
 string SaveName;
 string backupList[5];
+string back_ip;
 
 //go-cqhttpµÄAPI·â×°
 class msgAPI
@@ -42,10 +42,10 @@ public:
 	void privateMsg(string QQnum, string msg);
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
-	void sendBack(string msgType, string id, string groupId, string msg);
 };
 void msgAPI::privateMsg(string QQnum, string msg)
 {
+	httplib::Client cli(back_ip);
 	string http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
 	const char* path = http.c_str();
 	auto res = cli.Get(path);
@@ -53,6 +53,7 @@ void msgAPI::privateMsg(string QQnum, string msg)
 }
 void msgAPI::groupMsg(string group_id, string msg)
 {
+	httplib::Client cli(back_ip);
 	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
 	if (accessToken != "")
 	{
@@ -61,22 +62,7 @@ void msgAPI::groupMsg(string group_id, string msg)
 	const char* path = http.c_str();
 	auto res = cli.Get(path);
 }
-void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
-{
-	if (msgType == "private")
-	{
-		string http = "/send_private_msg?user_id=" + id + "&message=" + msg;
-		const char* path = http.c_str();
-		auto res = cli.Get(path);
-	}
-	else if (msgType == "group")
-	{
-		string http = "/send_group_msg?group_id=" + groupId + "&message=" + msg;
-		const char* path = http.c_str();
-		auto res = cli.Get(path);
-	}
-	return;
-}
+
 
 INT64 GROUPIDINT;
 string port;
@@ -367,7 +353,6 @@ int startCq()
 int main()
 {
 	system("chcp 936");
-	cli.set_bearer_token_auth("TendedGalaxy522");
 	json info;
 	fstream infoFile;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
@@ -377,6 +362,7 @@ int main()
 	GROUPIDINT = info["QQ_group_id"];
 	serverName = info["serverName"];
 	port = info["manager_port"];
+	back_ip = info["back_ip"];
 	start_mode = info["manager"]["start_mode"];
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
 	accessToken = info["accessToken"];

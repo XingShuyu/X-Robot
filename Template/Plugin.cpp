@@ -54,7 +54,7 @@ DWORD timeStart;//防刷屏
 string message;//收到的消息
 string http;//http头(别问我为什么要弄成全局)
 string accessToken;//通信密钥
-httplib::Client cli("127.0.0.1:5700");//gq-cqhttp上报
+string back_ip;
 
 using namespace std;
 
@@ -88,11 +88,11 @@ public:
 	void privateMsg(string QQnum, string msg);
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
-	void sendBack(string msgType, string id, string groupId, string msg);
 	json groupList(string group_id, bool no_cache);
 };
 void msgAPI::privateMsg(string QQnum, string msg)
 {
+	httplib::Client cli(back_ip);
 	http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
 	const char* path = http.c_str();
 	auto res = cli.Get(path);
@@ -100,6 +100,7 @@ void msgAPI::privateMsg(string QQnum, string msg)
 }
 void groupMsgSend(string group_id, string msg)
 {
+	httplib::Client cli(back_ip);
 	http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
 	if (accessToken != "")
 	{
@@ -113,24 +114,9 @@ void msgAPI::groupMsg(string group_id, string msg)
 	thread groupMsgTh(groupMsgSend, group_id, msg);
 	groupMsgTh.detach();
 }
-void msgAPI::sendBack(string msgType, string id, string groupId, string msg)
-{
-	if (msgType == "private")
-	{
-		http = "/send_private_msg?user_id=" + id + "&message=" + msg;
-		const char* path = http.c_str();
-		auto res = cli.Get(path);
-	}
-	else if (msgType == "group")
-	{
-		http = "/send_group_msg?group_id=" + groupId + "&message=" + msg;
-		const char* path = http.c_str();
-		auto res = cli.Get(path);
-	}
-	return;
-}
 json msgAPI::groupList(string group_id, bool no_cache)
 {
+	httplib::Client cli(back_ip);
 	string a;
 	if (no_cache) { a = "true"; }else{ a = "false"; }
 	http = "/get_group_member_list?group_id=" + group_id + "&no_cache=" + a;
@@ -333,64 +319,70 @@ inline void BlackBeCheck(string message)
 	else if (message.substr(9, 1) != " ") { message = message.substr(9, message.length()); }
 	json BlackBeJson;
 	msgAPI sendMsg;
-	if (message.find("[CQ:at,qq=") != message.npos)//查找QQ号
-	{
-		message = message.substr(10, message.length() - 11);
-		if (!BindID[message].empty())//QQ已绑定
+	try {
+		if (message.find("[CQ:at,qq=") != message.npos)//查找QQ号
 		{
-			string XboxName;
-			XboxName = BindID[message];
-			BlackBeJson = BlackBEGet(message, XboxName);
+			message = message.substr(10, message.length() - 11);
+			if (!BindID[message].empty())//QQ已绑定
+			{
+				string XboxName;
+				XboxName = BindID[message];
+				BlackBeJson = BlackBEGet(message, XboxName);
+			}
+			else {//QQ无绑定
+				BlackBeJson = BlackBEGet(message);
+			}
 		}
-		else {//QQ无绑定
-			BlackBeJson = BlackBEGet(message);
-		}
-	}
-	else//查找XboxId
-	{
-		if (!BindID[message].empty())//XboxID已绑定
+		else//查找XboxId
 		{
-			string QQid;
-			QQid = BindID[message];
-			BlackBeJson = BlackBEGet(QQid, message);
+			if (!BindID[message].empty())//XboxID已绑定
+			{
+				string QQid;
+				QQid = BindID[message];
+				BlackBeJson = BlackBEGet(QQid, message);
+			}
+			else//XboxID未绑定
+			{
+				httplib::Client BlackBe("https://api.blackbe.work");
+				http = "/openapi/v3/check/?name=" + message;
+				string body;
+				auto res = BlackBe.Get(http,
+					[&](const char* data, size_t data_length) {
+						body.append(data, data_length);
+				return true;
+					});
+				BlackBeJson = json::parse(body.begin(), body.end());
+			}
 		}
-		else//XboxID未绑定
+		if (!BlackBeJson["data"]["exist"]) {
+			sendMsg.groupMsg(GROUPID, "玩家不在黑名单中哦");
+		}
+		else if (BlackBeJson["data"]["exist"])
 		{
-			httplib::Client BlackBe("https://api.blackbe.work");
-			http = "/openapi/v3/check/?name="+message;
-			string body;
-			auto res = BlackBe.Get(http,
-				[&](const char* data, size_t data_length) {
-					body.append(data, data_length);
-			return true;
-				});
-			BlackBeJson = json::parse(body.begin(), body.end());
-		}
-	}
-	if (!BlackBeJson["data"]["exist"]) {
-		sendMsg.groupMsg(GROUPID, "玩家不在黑名单中哦");
-	}
-	else if (BlackBeJson["data"]["exist"])
-	{
-		cout << 1 << endl;
-		for (json::iterator it = BlackBeJson["data"]["info"].begin(); it != BlackBeJson["data"]["info"].end(); ++it) {
-			string body = it.value().dump();
-			json secList = json::parse(body.begin(), body.end());
-			string name = secList["name"];
-			cout << 3 << endl;
-			string info = secList["info"];
-			cout << 3 << endl;
-			string url = secList["uuid"];
-			url = "https://blackbe.work/detail/" + url;
-			cout << 3 << endl;
-			string qq = to_string(secList["qq"]);
 			cout << 1 << endl;
-			string level = to_string(secList["level"]);
-			cout << 2 << endl;
-			string msg = "玩家 " + name + " (QQ：" + qq + ")被列于云黑公开库\n危险等级: "+level+"\n封禁原因："+info+"\n详细信息: "+url;
-			cout << 3 << endl;
-			sendMsg.groupMsg(GROUPID, msg);
+			for (json::iterator it = BlackBeJson["data"]["info"].begin(); it != BlackBeJson["data"]["info"].end(); ++it) {
+				string body = it.value().dump();
+				json secList = json::parse(body.begin(), body.end());
+				string name = secList["name"];
+				cout << 3 << endl;
+				string info = secList["info"];
+				cout << 3 << endl;
+				string url = secList["uuid"];
+				url = "https://blackbe.work/detail/" + url;
+				cout << 3 << endl;
+				string qq = to_string(secList["qq"]);
+				cout << 1 << endl;
+				string level = to_string(secList["level"]);
+				cout << 2 << endl;
+				string msg = "玩家 " + name + " (QQ：" + qq + ")被列于云黑公开库\n危险等级: " + level + "\n封禁原因：" + info + "\n详细信息: " + url;
+				cout << 3 << endl;
+				sendMsg.groupMsg(GROUPID, msg);
+			}
 		}
+	}
+	catch (...)
+	{
+		sendMsg.groupMsg(GROUPID, "云黑查询失败");
 	}
 }
 
@@ -639,9 +631,38 @@ inline int websocketsrv()
 							{
 								if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
 								else if (message.substr(6, 1) != " ") { message = message.substr(6, message.length()); }
-								json BlackBe = BlackBEGet(userid,message);
-								if (!BlackBe["data"]["exist"])
+								try {
+									json BlackBe = BlackBEGet(userid, message);
+									if (!BlackBe["data"]["exist"])
+									{
+										string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
+										sendMsg.groupMsg(GROUPID, msg);
+										if (!BindID[userid].empty()) {
+											string XboxName = "";
+											XboxName = BindID[userid];
+											BindID.erase(BindID.find(userid));
+											BindID.erase(BindID.find(XboxName));
+											ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+											a << std::setw(4) << BindID << std::endl;
+											a.close();
+											msg = "whitelist remove \"" + XboxName + "\"";
+											Level::runcmd(msg);
+										}
+										BindID[userid] = message;
+										BindID[message] = userid;
+										ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+										a << std::setw(4) << BindID << std::endl;
+										a.close();
+										msg = "whitelist add \"" + message + "\"";
+										Level::runcmd(msg);
+									}
+									else if (BlackBe["data"]["exist"]) {
+										sendMsg.groupMsg(GROUPID, "玩家[CQ:at,qq=" + userid + "]账号被列于云黑，请用查云黑检查！");
+									}
+								}
+								catch (...)
 								{
+									sendMsg.groupMsg(GROUPID, "云黑检查失败，尝试不检查云黑进行绑定");
 									string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
 									sendMsg.groupMsg(GROUPID, msg);
 									if (!BindID[userid].empty()) {
@@ -663,10 +684,6 @@ inline int websocketsrv()
 									msg = "whitelist add \"" + message + "\"";
 									Level::runcmd(msg);
 								}
-								else if (BlackBe["data"]["exist"]) {
-									sendMsg.groupMsg(GROUPID, "玩家[CQ:at,qq=" + userid + "]账号被列于云黑，请用查云黑检查！");
-								}
-
 							}
 							else
 							{
@@ -778,6 +795,7 @@ inline int websocketsrv()
 							Text.close();
 
 							////////////////////////删除旧文件
+							httplib::Client cli(back_ip);
 							auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID + "&access_token=" + accessToken);
 							json FileList = json::parse(res->body.begin(), res->body.end());
 							for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
@@ -901,6 +919,7 @@ void PluginInit()
 	SrvInfoCommand = info["settings"]["SrvInfo"];
 	messageTime = info["settings"]["messageTime"];
 	CommandForward = info["settings"]["CommandForward"];
+	back_ip = info["back_ip"];
 	infoFile.close();
 
 	std::cout << "转发QQ群：" << GROUPID << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
