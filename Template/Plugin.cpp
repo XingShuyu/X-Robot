@@ -198,18 +198,12 @@ inline void customMsg(string message,string username,string cmdMsg,string userid
 	messageFile.open(".\\plugins\\X-Robot\\Message.json");
 	json customMessage;
 	messageFile >> customMessage;
+	messageFile.close();
 	int num = 0;
 	while (1)
 	{
 		string fileMsg;
-		try
-		{
-			fileMsg = customMessage[to_string(num)]["QQ"];
-		}
-		catch (...)
-		{
-			break;
-		}
+		if (customMessage[to_string(num)]["QQ"].empty() == true)break;
 		if (fileMsg == message)
 		{
 			
@@ -398,85 +392,87 @@ inline void ConsoleEvent(string BlackMsg) {
 inline int websocketsrv()
 {
 	reload:SOCKET ClientSocket;
-	WSADATA wsaData;
-	int iResult;
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0) {
-		printf("WSAStartup failed: %d\n", iResult);
-		return 1;
-	}
+	SOCKET ListenSocket = INVALID_SOCKET;
+	try
+	{
+		WSADATA wsaData;
+		int iResult;
+		// Initialize Winsock
+		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+		if (iResult != 0) {
+			printf("WSAStartup failed: %d\n", iResult);
+			return 1;
+		}
 #define DEFAULT_PORT port.c_str()
 
-	struct addrinfo* result = NULL, * ptr = NULL, hints;
+		struct addrinfo* result = NULL, * ptr = NULL, hints;
 
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
+		ZeroMemory(&hints, sizeof(hints));
+		hints.ai_family = AF_INET;
+		hints.ai_socktype = SOCK_STREAM;
+		hints.ai_protocol = IPPROTO_TCP;
+		hints.ai_flags = AI_PASSIVE;
 
-	// Resolve the local address and port to be used by the server
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-	if (iResult != 0) {
-		printf("getaddrinfo failed: %d\n", iResult);
-		WSACleanup();
-		return 1;
-	}
-
-	SOCKET ListenSocket = INVALID_SOCKET;
-	// Create a SOCKET for the server to listen for client connections
-
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if (ListenSocket == INVALID_SOCKET) {
-		printf("Error at socket(): %ld\n", WSAGetLastError());
-		freeaddrinfo(result);
-		WSACleanup();
-		return 1;
-	}
-	// Setup the TCP listening socket
-	iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-	if (iResult == SOCKET_ERROR) {
-		printf("bind failed with error: %d\n", WSAGetLastError());
-		freeaddrinfo(result);
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-	freeaddrinfo(result);
-	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		printf("Listen failed with error: %ld\n", WSAGetLastError());
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
+		// Resolve the local address and port to be used by the server
+		iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
+		if (iResult != 0) {
+			printf("getaddrinfo failed: %d\n", iResult);
+			WSACleanup();
+			return 1;
+		}
 
 
-	cout << "Websocket Loaded" << endl;;
+		// Create a SOCKET for the server to listen for client connections
 
-	while (1)
-	{
-		ClientSocket = INVALID_SOCKET;
-		// Accept a client socket
-		ClientSocket = accept(ListenSocket, NULL, NULL);
-		if (ClientSocket == INVALID_SOCKET) {
-			printf("accept failed: %d\n", WSAGetLastError());
+		ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
+		if (ListenSocket == INVALID_SOCKET) {
+			printf("Error at socket(): %ld\n", WSAGetLastError());
+			freeaddrinfo(result);
+			WSACleanup();
+			return 1;
+		}
+		// Setup the TCP listening socket
+		iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
+		if (iResult == SOCKET_ERROR) {
+			printf("bind failed with error: %d\n", WSAGetLastError());
+			freeaddrinfo(result);
 			closesocket(ListenSocket);
 			WSACleanup();
 			return 1;
 		}
+		freeaddrinfo(result);
+		if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
+			printf("Listen failed with error: %ld\n", WSAGetLastError());
+			closesocket(ListenSocket);
+			WSACleanup();
+			return 1;
+		}
+
+
+		cout << "Websocket Loaded" << endl;;
+
+		while (1)
+		{
+			ClientSocket = INVALID_SOCKET;
+			// Accept a client socket
+			ClientSocket = accept(ListenSocket, NULL, NULL);
+			if (ClientSocket == INVALID_SOCKET) {
+				printf("accept failed: %d\n", WSAGetLastError());
+				closesocket(ListenSocket);
+				WSACleanup();
+				return 1;
+			}
 #define DEFAULT_BUFLEN 8192
 
-		char recvbuf[DEFAULT_BUFLEN];
-		int iResult, iSendResult;
-		int recvbuflen = DEFAULT_BUFLEN;
+			char recvbuf[DEFAULT_BUFLEN];
+			int iResult, iSendResult;
+			int recvbuflen = DEFAULT_BUFLEN;
 
-		// Receive until the peer shuts down the connection
-		do {
+			// Receive until the peer shuts down the connection
+			do {
 
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-			if (iResult > 0) {
-				try {
+				iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
+				if (iResult > 0) {
 					string jsonmsg = recvbuf;
 					jsonmsg = jsonmsg.substr(0, iResult);
 					jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find_last_of("}") - 4);
@@ -826,7 +822,7 @@ inline int websocketsrv()
 
 						//调试用指令
 
-						if (message == "强制崩溃" && role == "owner")
+						if (message == "强制崩溃" && OpCheck(userid, role) == true)
 						{
 							string crashString = "123456";
 							crashString = crashString.substr(100, 105);
@@ -854,41 +850,44 @@ inline int websocketsrv()
 						//return 1;
 					}
 
+
 				}
-				catch (...) {
-					cout << "机器人发生崩溃qwq，正在生成错误日志" << endl;
-					SYSTEMTIME sys;
-					GetLocalTime(&sys);
-					string cmd = "echo f | xcopy .\\plugins\\X-Robot\\LastestLog.txt .\\plugins\\X-Robot\\CrashLog\\CrashLog-" + to_string(sys.wYear) + "-" + to_string(sys.wMonth) + "-" + to_string(sys.wDay) + "-" + to_string(sys.wHour) + ".txt /y";
-					cout << cmd;
-					FileLog.error("机器人崩溃!");
-					system(cmd.c_str());
-				}//崩溃日志
-			}
 
-			else if (iResult == 0)
-				printf("Connection ended...\n");
-			else {
-				printf("recv failed: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
-			}
+				else if (iResult == 0)
+					printf("Connection ended...\n");
+				else {
+					printf("recv failed: %d\n", WSAGetLastError());
+					closesocket(ClientSocket);
+					WSACleanup();
+					return 1;
+				}
 
-			// shutdown the send half of the connection since no more data will be sent
-			iResult = shutdown(ClientSocket, SD_SEND);
-			if (iResult == SOCKET_ERROR) {
-				printf("shutdown failed: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
-			}
+				// shutdown the send half of the connection since no more data will be sent
+				iResult = shutdown(ClientSocket, SD_SEND);
+				if (iResult == SOCKET_ERROR) {
+					printf("shutdown failed: %d\n", WSAGetLastError());
+					closesocket(ClientSocket);
+					WSACleanup();
+					return 1;
+				}
 
-		} while (iResult > 0);
+			} while (iResult > 0);
+		}
+		return 1;
 	}
-
-	return 1;
-	
+	catch (...) {
+		XLog.error("机器人发生崩溃qwq，正在生成错误日志");
+		SYSTEMTIME sys;
+		GetLocalTime(&sys);
+		string cmd = "echo f | xcopy .\\plugins\\X-Robot\\LastestLog.txt .\\plugins\\X-Robot\\CrashLog\\CrashLog-" + to_string(sys.wYear) + "-" + to_string(sys.wMonth) + "-" + to_string(sys.wDay) + "-" + to_string(sys.wHour) + ".txt /y";
+		FileLog.error("机器人崩溃!");
+		system(cmd.c_str());
+		closesocket(ClientSocket);
+		WSACleanup();
+		closesocket(ListenSocket);
+		WSACleanup();
+		goto reload;
+	}//崩溃日志
 }
 
 extern Logger loggerPlu;
