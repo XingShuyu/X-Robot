@@ -137,7 +137,7 @@ inline void msgCut(string message,string username)
 		string cqat = message.substr(message.find("[CQ:image"), message.length());
 		int CQlocate = (int)message.find("[CQ:image");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
-		int CQlen = CQlocate+ (int)cqat.length()+1;
+		int CQlen = (int)cqat.length()+1;
 		cqat = "[图片]";
 		message = message.replace(CQlocate, CQlen, cqat);
 		goto msgcut;
@@ -147,7 +147,7 @@ inline void msgCut(string message,string username)
 		string cqat = message.substr(message.find("[CQ:at,qq="), message.length());
 		int CQlocate = (int)message.find("[CQ:at,qq=");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
-		int CQlen = (int)cqat.length() + CQlocate + 1;
+		int CQlen = (int)cqat.length() + 1;
 		int CQLEN = CQlen - 1;
 		cqat = cqat.substr(10, CQLEN);
 		cqat = "@" + cqat;
@@ -159,9 +159,20 @@ inline void msgCut(string message,string username)
 		string cqat = message.substr(message.find("[CQ:face,id="), message.length());
 		int CQlocate = (int)message.find("[CQ:face,id=");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
-		int CQlen = (int)cqat.length() + CQlocate + 1;
+		int CQlen = (int)cqat.length() + 1;
 		cqat = "[QQ表情]";
 		message = message.replace(CQlocate, CQlen, cqat);
+		goto msgcut;
+	}
+	else if (message.find("[CQ:reply") != message.npos)
+	{
+		string cqat = message.substr(message.find("[CQ:reply"), message.length());
+		cout << cqat << endl;
+		int CQlocate = (int)message.find("[CQ:reply");
+		cqat = cqat.substr(0, cqat.find_first_of("] "));
+		int CQlen = (int)cqat.length();
+		cqat = "[回复]";
+		message = message.replace(CQlocate, CQlen+1, cqat);
 		goto msgcut;
 	}
 	if (message.find("CQ:") == message.npos)
@@ -687,31 +698,7 @@ inline int websocketsrv()
 							}
 
 						}
-						if ((notice_type == "group_increase") && whitelistAdd == true)
-						{
-							msgAPI sendMsg;
-							string msg;
-							msg = "欢迎新成员[CQ:at,qq=" + userid + "],发送\"绑定 ****\"进行绑定并获取白名单";
-							sendMsg.groupMsg(GROUPID, msg);
-						}
-						if (notice_type == "group_decrease")
-						{
-							msgAPI sendmsg;
-							string XboxName;
-							try {
-								XboxName = BindID[userid];
-								BindID.erase(BindID.find(userid));
-								BindID.erase(BindID.find(XboxName));
-								ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
-								a << std::setw(4) << BindID << std::endl;
-								a.close();
-							}
-							catch (...) { XboxName = "未绑定" + userid; }
-							string msg = XboxName + "(QQ" + userid + ")离开了我们 %0A已自动删除白名单";
-							sendmsg.groupMsg(GROUPID, msg);
-							msg = "whitelist remove " + XboxName;
-							Level::runcmd(msg);
-						}
+						
 						if (message == "查询绑定")
 						{
 							msgAPI sendMsg;
@@ -833,6 +820,31 @@ inline int websocketsrv()
 						newthread.detach();
 
 
+					}
+					if (groupid == GROUPIDINT && notice_type == "group_increase" && whitelistAdd == true)
+					{
+						msgAPI sendMsg;
+						string msg;
+						msg = "欢迎新成员[CQ:at,qq=" + userid + "],发送\"绑定 ****\"进行绑定并获取白名单";
+						sendMsg.groupMsg(GROUPID, msg);
+					}
+					if (groupid == GROUPIDINT && notice_type == "group_decrease")
+					{
+						msgAPI sendmsg;
+						string XboxName;
+						try {
+							XboxName = BindID[userid];
+							BindID.erase(BindID.find(userid));
+							BindID.erase(BindID.find(XboxName));
+							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+							a << std::setw(4) << BindID << std::endl;
+							a.close();
+						}
+						catch (...) { XboxName = "未绑定" + userid; }
+						string msg = XboxName + "(QQ" + userid + ")离开了我们 %0A已自动删除白名单";
+						sendmsg.groupMsg(GROUPID, msg);
+						msg = "whitelist remove " + XboxName;
+						Level::runcmd(msg);
 					}
 					string sedbuf = "HTTP/1.1 200 OK\r\n";
 					// Echo the buffer back to the sender
