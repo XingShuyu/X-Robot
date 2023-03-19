@@ -400,7 +400,7 @@ inline void ConsoleEvent(string BlackMsg) {
 	}
 }//防止命令监听导致掉TPS而建立的新线程
 
-inline int websocketsrv()
+int websocketsrv()
 {
 	reload:SOCKET ClientSocket;
 	SOCKET ListenSocket = INVALID_SOCKET;
