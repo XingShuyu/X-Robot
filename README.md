@@ -1,6 +1,8 @@
 # X-Robot
 一个为BDS定制的轻量QQ机器人
 
+![DownLoad](https://img.shields.io/github/downloads/XingShuyu/X-Robot/latest/total?style=for-the-badge&color=success)
+![Latest Tag](https://img.shields.io/github/v/tag/XingShuyu/X-Robot?label=LATEST%20TAG&style=for-the-badge)
 >功能列表
 
 1. MC聊天->QQ的转发
