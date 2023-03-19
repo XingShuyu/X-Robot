@@ -642,6 +642,13 @@ inline int websocketsrv()
 									json BlackBe = BlackBEGet(userid, message);
 									if (!BlackBe["data"]["exist"])
 									{
+										if ((BindID[message].empty() == false) && userid != BindID[message])
+										{
+											string bindqq = BindID[message];
+											string msg = "该账号已经被绑定了哦%0A请联系号主qq" + bindqq + "更改绑定后再试吧";
+											sendMsg.groupMsg(GROUPID, msg);
+											goto outBind;
+										}
 										string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
 										sendMsg.groupMsg(GROUPID, msg);
 										if (!BindID[userid].empty()) {
@@ -698,7 +705,7 @@ inline int websocketsrv()
 							}
 
 						}
-						
+					outBind:;
 						if (message == "查询绑定")
 						{
 							msgAPI sendMsg;
