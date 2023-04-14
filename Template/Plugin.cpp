@@ -391,6 +391,40 @@ inline void BlackBeCheck(string message)
 	}
 }
 
+inline void GetState()
+{
+	while (1)
+	{
+		httplib::Client cli(back_ip);
+		string links = "/get_status";
+		string body;
+		auto res = cli.Get(links,
+			[&](const char* data, size_t data_length) {
+				body.append(data, data_length);
+		return true;
+			});
+		json state;
+		try
+		{
+			state = json::parse(body.begin(), body.end());
+		}
+		catch (...)
+		{
+			FileLog.error("机器人状态检测失败!");
+			XLog.error("机器人状态检测失败!");
+			goto out;
+		}
+		bool online = state["data"]["online"];
+		if (online == false)
+		{
+			FileLog.error("机器人掉线!");
+			XLog.error("机器人掉线!");
+		}
+		Sleep(5000);
+	}
+out:return;
+}
+
 inline void ConsoleEvent(string BlackMsg) {
 	msgAPI msgSend;
 	if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
@@ -980,6 +1014,11 @@ void PluginInit()
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	thread tl(websocketsrv);
 	tl.detach();
+
+	//机器人账号检测
+	thread Online(GetState);
+	Online.detach();
+
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)
 		{
 			msgAPI msgSend;

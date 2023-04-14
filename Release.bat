@@ -1,3 +1,4 @@
+powershell rm .\X-Robot.zip
 echo "Making Folders..."
 mkdir ReleasePack
 mkdir ReleasePack\plugins
