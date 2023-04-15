@@ -149,6 +149,13 @@
   <ItemGroup>
     <ClInclude Include="httplib.h" />
     <ClInclude Include="nlohmann\json.hpp" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Manager.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon3.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
