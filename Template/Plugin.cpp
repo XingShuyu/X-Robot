@@ -38,6 +38,21 @@
 #include "SysInfo.h"
 #include <regex>
 
+#include <websocketpp/config/asio_no_tls_client.hpp>
+#include <websocketpp/client.hpp>
+
+
+#include <websocketpp/common/thread.hpp>
+#include <websocketpp/common/memory.hpp>
+
+#include <cstdlib>
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
+
+typedef websocketpp::client<websocketpp::config::asio_client> client;
+
 
 using namespace nlohmann;
 INT64 GROUPIDINT = 452675761;
@@ -46,7 +61,6 @@ string GROUPID = std::to_string(GROUPIDINT);//QQ群号
 string serverName = "服务器";//服务器名称
 json BindID;//绑定
 json op;//op鉴定权限
-string port;//服务器端口
 bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand,CommandForward;//配置选择
 string cmdMsg;//控制台消息
 DWORD Start;//获取服务器启动时间
@@ -54,7 +68,10 @@ DWORD timeStart;//防刷屏
 string message;//收到的消息
 string http;//http头(别问我为什么要弄成全局)
 string accessToken;//通信密钥
-string back_ip;
+string cq_ip;
+int get_list_status = 0;//查未绑定名单步骤
+string file_id;
+int busid;
 
 using namespace std;
 
@@ -88,46 +105,8 @@ public:
 	void privateMsg(string QQnum, string msg);
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
-	json groupList(string group_id, bool no_cache);
 };
-void msgAPI::privateMsg(string QQnum, string msg)
-{
-	httplib::Client cli(back_ip);
-	http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
-	const char* path = http.c_str();
-	auto res = cli.Get(path);
 
-}
-void groupMsgSend(string group_id, string msg)
-{
-	httplib::Client cli(back_ip);
-	http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
-	if (accessToken != "")
-	{
-		http = http + "&access_token=" + accessToken;
-	}
-	const char* path = http.c_str();
-	auto res = cli.Get(path);
-}
-void msgAPI::groupMsg(string group_id, string msg)
-{
-	thread groupMsgTh(groupMsgSend, group_id, msg);
-	groupMsgTh.detach();
-}
-json msgAPI::groupList(string group_id, bool no_cache)
-{
-	httplib::Client cli(back_ip);
-	string a;
-	if (no_cache) { a = "true"; }else{ a = "false"; }
-	http = "/get_group_member_list?group_id=" + group_id + "&no_cache=" + a;
-	if (accessToken != "")
-	{
-		http = http + "&access_token=" + accessToken;
-	}
-	auto res = cli.Get(http.c_str());
-	json resJson = json::parse(res->body.begin(), res->body.end());
-	return resJson;
-}
 
 inline void msgCut(string message,string username)
 {
@@ -190,14 +169,14 @@ inline void listPlayer()
 	vector<Player*> allPlayer = Level::getAllPlayers();
 	int playerNum = (int)allPlayer.size();
 	int i = 0;
-	string msg = serverName + "服务器在线玩家:%0A" + to_string(playerNum) + "位在线玩家%0A";
+	string msg = serverName + "服务器在线玩家:\n" + to_string(playerNum) + "位在线玩家\n";
 	if (playerNum != 0)
 	{
 		while (i < playerNum)
 		{
 			Player* player = allPlayer[i];
 			i++;
-			msg = msg + player->getRealName() + "%0A";
+			msg = msg + player->getRealName() + "\n";
 		}
 	}
 	msgAPI sendMsg;
@@ -391,39 +370,6 @@ inline void BlackBeCheck(string message)
 	}
 }
 
-inline void GetState()
-{
-	while (1)
-	{
-		httplib::Client cli(back_ip);
-		string links = "/get_status";
-		string body;
-		auto res = cli.Get(links,
-			[&](const char* data, size_t data_length) {
-				body.append(data, data_length);
-		return true;
-			});
-		json state;
-		try
-		{
-			state = json::parse(body.begin(), body.end());
-		}
-		catch (...)
-		{
-			FileLog.error("机器人状态检测失败!");
-			XLog.error("机器人状态检测失败!");
-			goto out;
-		}
-		bool online = state["data"]["online"];
-		if (online == false)
-		{
-			FileLog.error("机器人掉线!");
-			XLog.error("机器人掉线!");
-		}
-		Sleep(5000);
-	}
-out:return;
-}
 
 inline void ConsoleEvent(string BlackMsg) {
 	msgAPI msgSend;
@@ -434,523 +380,650 @@ inline void ConsoleEvent(string BlackMsg) {
 	}
 }//防止命令监听导致掉TPS而建立的新线程
 
-int websocketsrv()
-{
-	reload:SOCKET ClientSocket;
-	SOCKET ListenSocket = INVALID_SOCKET;
-	try
-	{
-		WSADATA wsaData;
-		int iResult;
-		// Initialize Winsock
-		iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-		if (iResult != 0) {
-			printf("WSAStartup failed: %d\n", iResult);
-			return 1;
-		}
-#define DEFAULT_PORT port.c_str()
+void groupList(string group_id, int status);
 
-		struct addrinfo* result = NULL, * ptr = NULL, hints;
+class connection_metadata {
+public:
+	typedef websocketpp::lib::shared_ptr<connection_metadata> ptr;
 
-		ZeroMemory(&hints, sizeof(hints));
-		hints.ai_family = AF_INET;
-		hints.ai_socktype = SOCK_STREAM;
-		hints.ai_protocol = IPPROTO_TCP;
-		hints.ai_flags = AI_PASSIVE;
+	connection_metadata(int id, websocketpp::connection_hdl hdl, std::string uri)
+		: m_id(id)
+		, m_hdl(hdl)
+		, m_status("Connecting")
+		, m_uri(uri)
+		, m_server("N/A")
+	{}
 
-		// Resolve the local address and port to be used by the server
-		iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-		if (iResult != 0) {
-			printf("getaddrinfo failed: %d\n", iResult);
-			WSACleanup();
-			return 1;
-		}
+	void on_open(client* c, websocketpp::connection_hdl hdl) {
+		m_status = "Open";
 
+		client::connection_ptr con = c->get_con_from_hdl(hdl);
+		m_server = con->get_response_header("Server");
+	}
 
-		// Create a SOCKET for the server to listen for client connections
+	void on_fail(client* c, websocketpp::connection_hdl hdl) {
+		m_status = "Failed";
 
-		ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-		if (ListenSocket == INVALID_SOCKET) {
-			printf("Error at socket(): %ld\n", WSAGetLastError());
-			freeaddrinfo(result);
-			WSACleanup();
-			return 1;
-		}
-		// Setup the TCP listening socket
-		iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-		if (iResult == SOCKET_ERROR) {
-			printf("bind failed with error: %d\n", WSAGetLastError());
-			freeaddrinfo(result);
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
-		freeaddrinfo(result);
-		if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-			printf("Listen failed with error: %ld\n", WSAGetLastError());
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
+		client::connection_ptr con = c->get_con_from_hdl(hdl);
+		m_server = con->get_response_header("Server");
+		m_error_reason = con->get_ec().message();
+	}
 
+	void on_close(client* c, websocketpp::connection_hdl hdl) {
+		m_status = "Closed";
+		client::connection_ptr con = c->get_con_from_hdl(hdl);
+		std::stringstream s;
+		s << "close code: " << con->get_remote_close_code() << " ("
+			<< websocketpp::close::status::get_string(con->get_remote_close_code())
+			<< "), close reason: " << con->get_remote_close_reason();
+		m_error_reason = s.str();
+	}
 
-		cout << "Websocket Loaded" << endl;;
-
-		while (1)
-		{
-			ClientSocket = INVALID_SOCKET;
-			// Accept a client socket
-			ClientSocket = accept(ListenSocket, NULL, NULL);
-			if (ClientSocket == INVALID_SOCKET) {
-				printf("accept failed: %d\n", WSAGetLastError());
-				closesocket(ListenSocket);
-				WSACleanup();
-				return 1;
+	void on_message(websocketpp::connection_hdl, client::message_ptr msg) {
+		if (msg->get_opcode() == websocketpp::frame::opcode::text) {
+			string jsonmsg = msg->get_payload();
+			if (jsonmsg.find("\"meta_event_type\":\"heartbeat\"") == jsonmsg.npos)
+			{
+				struct _stat info;
+				_stat(".\\plugins\\X-Robot\\LastestLog.txt", &info);
+				int size = info.st_size;
+				if (size / 1024 / 1024 > 10) {
+					ofstream a;
+					a.open(".\\plugins\\X-Robot\\LastestLog.txt");
+					a << "";
+					a.close();
+				}
+				FileLog.info("[源数据]" + jsonmsg);
 			}
-#define DEFAULT_BUFLEN 8192
-
-			char recvbuf[DEFAULT_BUFLEN];
-			int iResult, iSendResult;
-			int recvbuflen = DEFAULT_BUFLEN;
-
-			// Receive until the peer shuts down the connection
-			do {
-
-				iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-				if (iResult > 0) {
-					string jsonmsg = recvbuf;
-					jsonmsg = jsonmsg.substr(0, iResult);
-					jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find_last_of("}") - 4);
-					if (jsonmsg.find("\"meta_event_type\":\"heartbeat\"") == jsonmsg.npos)
+			//cout <<"/////////////////////////////" << jsonmsg << "////////////////////////////////" << endl;
+				// parse explicitly
+			json jm;
+			try
+			{
+				jm = json::parse(jsonmsg.begin(), jsonmsg.end());
+			}
+			catch (...) { cout << "反序列化失败" << endl << endl << endl << endl; FileLog.error("反序列化失败!"); }
+			string userid;
+			string username;
+			INT64 groupid = 0;
+			string role = "member";
+			string notice_type;
+			string post_type;
+			try { message = jm["message"]; }//message为消息内容，为string
+			catch (...) {}
+			try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
+			catch (...) {}
+			try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为string
+			catch (...) {}
+			try
+			{
+				username = jm["sender"]["card"];
+				if (username == "")
+				{
+					username = jm["sender"]["nickname"];
+				}
+			}//username，为发送者的的群昵称（优先）或者用户名，为string
+			catch (...) {}
+			try { groupid = jm["group_id"]; }//groupid为消息来源的QQ群，为int
+			catch (...) {}
+			try { notice_type = jm["notice_type"]; }
+			catch (...) { notice_type = ""; }
+			try { post_type = jm["post_type"]; }
+			catch (...) { post_type = ""; }
+			//消息处理
+			if (get_list_status == 3)
+			{
+				////////////////////////删除旧文件
+				json FileList = jm;
+				cout << jm.dump() << endl;
+				for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
+					json secList = it.value();
+					if (secList["file_name"] == "摸鱼人员名单.txt")
 					{
-						struct _stat info;
-						_stat(".\\plugins\\X-Robot\\LastestLog.txt", &info);
-						int size = info.st_size;
-						if (size / 1024 / 1024 > 10) {
-							ofstream a;
-							a.open(".\\plugins\\X-Robot\\LastestLog.txt");
-							a << "";
-							a.close();
-						}
-						FileLog.info("[源数据]" + jsonmsg);
+						file_id = secList["file_id"];
+						busid = secList["busid"];
+						get_list_status = 4;
+						groupList(GROUPID, 4);
+						break;
 					}
-					//cout <<"/////////////////////////////" << jsonmsg << "////////////////////////////////" << endl;
-						// parse explicitly
-					json jm;
-					try
+				}
+				//////////////////上传新文件
+				get_list_status = 0;
+				groupList(GROUPID, 5);
+			}
+			if (get_list_status == 1)
+			{
+				get_list_status = 2;
+				msgAPI sendMsg;
+				json nameList = jm;
+				string Num = "摸鱼人员名单:\n";
+				for (json::iterator it = nameList["data"].begin(); it != nameList["data"].end(); ++it) {
+					json secList = it.value();
+					string user_id = to_string(secList["user_id"]);
+					string noneNickname = secList["nickname"];
+					if (BindID[user_id].empty() == true)
 					{
-						jm = json::parse(jsonmsg.begin(), jsonmsg.end());
+						Num = Num + "QQ:" + user_id + "," + "群名称:" + noneNickname + "\n";
 					}
-					catch (...) { cout << "反序列化失败" << endl << endl << endl << endl; FileLog.error("反序列化失败!"); }
-					string userid;
-					string username;
-					INT64 groupid = 0;
-					string role = "member";
-					string notice_type;
-					try { message = jm["message"]; }//message为消息内容，为string
-					catch (...) {}
-					try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
-					catch (...) {}
-					try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为string
-					catch (...) {}
-					try
+				}
+				ofstream Text(".\\plugins\\X-Robot\\NoBindList.txt");
+				Text << Num << endl;
+				Text.close();
+				get_list_status = 3;
+				groupList(GROUPID, 3);
+			}
+			if (groupid == GROUPIDINT && notice_type == ""&& (post_type=="message" || post_type=="message_sent")&&get_list_status==0 )
+			{
+				//常规指令集
+				if (message.find("/") == 0 && message.length() >= 3)
+				{
+					//辨权
+					if (op["OP"] == 0)
 					{
-						username = jm["sender"]["card"];
-						if (username == "")
+						if (role != "member")//QQ执行指令
 						{
-							username = jm["sender"]["nickname"];
+							string cmdMsg = message.substr(1, message.length());
+							Level::runcmd(cmdMsg);
 						}
-					}//username，为发送者的的群昵称（优先）或者用户名，为string
-					catch (...) {}
-					try { groupid = jm["group_id"]; }//groupid为消息来源的QQ群，为int
-					catch (...) {}
-					try { notice_type = jm["notice_type"]; }
-					catch (...) { notice_type = ""; }
-					//消息处理
-					if (groupid == GROUPIDINT && notice_type == "")
+						else if (role == "member")
+						{
+							msgAPI sendmsg;
+							sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
+						}
+					}
+					else if (op["OP"] == 1)
 					{
-						//常规指令集
-						if (message.find("/") == 0 && message.length() >= 3)
+						try
 						{
-							//辨权
-							if (op["OP"] == 0)
+							int playerOp = op[userid];
+							string cmdMsg = message.substr(1, message.length());
+							Level::runcmd(cmdMsg);
+						}
+						catch (...)
+						{
+							msgAPI sendmsg;
+							sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
+						}
+					}
+				}
+
+
+				if (message.find("添加白名单") == 0 && role == "owner" && message.length() >= 17)
+				{
+					message = message.substr(16, message.length());
+					string cmd = "whitelist add \"" + message + "\"";
+					Level::runcmd(cmd);
+				}
+				if ((message == "list" && listCommand == true) && (timeChecker() == true || OpCheck(userid, role) == true))//玩家列表
+				{
+					listPlayer();
+				}
+				else if ((message == "查服" && SrvInfoCommand == true) && (timeChecker() == true || OpCheck(userid, role) == true))
+				{
+					msgAPI sendMsg;
+					int current_pid = GetCurrentPid();
+					float cpu_usage_ratio = GetCpuUsageRatio(current_pid);
+					MEMORYSTATUSEX statex;
+					statex.dwLength = sizeof(statex);
+					GlobalMemoryStatusEx(&statex);
+					DWORD End = unsigned(GetTickCount64());
+					cpu_usage_ratio = cpu_usage_ratio * 100;
+					int cpu_usage = cpu_usage_ratio;
+					string msg = serverName + "服务器信息" + "\n服务器版本:" + ll::getBdsVersion() + "\nBDS协议号:" + to_string(ll::getServerProtocolVersion()) + "\nLL版本号:" + ll::getLoaderVersionString() + " \n进程PID: " + to_string(current_pid) + " \nCPU使用率 : " + to_string(cpu_usage) + "%\nCPU核数:" + to_string(GetCpuNum()) + " \n内存占用 : " + to_string(statex.dwMemoryLoad) + " %\n总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB\n剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB\n服务器启动时间:" + to_string((End - Start) / 1000 / 60 / 60 / 24) + "天" + to_string(((End - Start) / 1000 / 60 / 60) % 24) + "小时" + to_string(((End - Start) / 1000 / 60) % 60) + "分钟";
+					sendMsg.groupMsg(GROUPID, msg);
+					listPlayer();
+				}
+				else if (message == "菜单" && (timeChecker() == true || OpCheck(userid, role) == true))
+				{
+					msgAPI sendMsg;
+					string msg = "\# X-Robot\n一个为BDS定制的LL机器人\n> 功能列表\n1. MC聊天->QQ的转发\n2. list查在线玩家\n3. QQ中%发送消息到mc\n4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"\n5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询\n6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+					sendMsg.groupMsg(GROUPID, msg);
+				}
+				else if (timeChecker() == false && (message == "菜单" || message == "查服" || message == "list"))
+				{
+					//msgAPI sendMsg;
+					//sendMsg.groupMsg(GROUPID, "太着急了，待会再试叭");
+				}
+				if (message.find("%") == 0 && message.length() >= 3 && with_chat == true && QQforward == true)
+				{
+					message = message.substr(1, message.length());
+					thread msgCutTh(msgCut, message, username);//多线程处理
+					msgCutTh.detach();
+				}
+				else if (with_chat == false && QQforward == true)
+				{
+					thread msgCutTh(msgCut, message, username);//多线程处理
+					msgCutTh.detach();
+				}
+				if (message == "关服" && role == "owner")
+				{
+					Level::runcmd("stop");
+				}
+				if (message == "开服" && OpCheck(userid, role) == true)
+				{
+					Level::runcmd("stop");
+				}
+				if (message == "recovery" && OpCheck(userid, role) == true)
+				{
+					Level::runcmd("stop");
+				}
+
+				//ID与白名单相关
+
+				if (message.find("绑定") == 0 && message.length() > 6)
+				{
+					msgAPI sendMsg;
+					if (message.find("[CQ:") == message.npos && message.find("[mirai:") == message.npos)
+					{
+						if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
+						else if (message.substr(6, 1) != " ") { message = message.substr(6, message.length()); }
+						try {
+							json BlackBe = BlackBEGet(userid, message);
+							if (!BlackBe["data"]["exist"])
 							{
-								if (role != "member")//QQ执行指令
+								if ((BindID[message].empty() == false) && userid != BindID[message])
 								{
-									string cmdMsg = message.substr(1, message.length());
-									Level::runcmd(cmdMsg);
-								}
-								else if (role == "member")
-								{
-									msgAPI sendmsg;
-									sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
-								}
-							}
-							else if (op["OP"] == 1)
-							{
-								try
-								{
-									int playerOp = op[userid];
-									string cmdMsg = message.substr(1, message.length());
-									Level::runcmd(cmdMsg);
-								}
-								catch (...)
-								{
-									msgAPI sendmsg;
-									sendmsg.groupMsg(GROUPID, "权限不足，拒绝执行");
-								}
-							}
-						}
-
-
-						if (message.find("添加白名单") == 0 && role == "owner" && message.length() >= 17)
-						{
-							message = message.substr(16, message.length());
-							string cmd = "whitelist add \"" + message + "\"";
-							Level::runcmd(cmd);
-						}
-						if ((message == "list" && listCommand == true) && (timeChecker() == true || OpCheck(userid, role) == true))//玩家列表
-						{
-							listPlayer();
-						}
-						else if ((message == "查服" && SrvInfoCommand == true) && (timeChecker() == true || OpCheck(userid, role) == true))
-						{
-							msgAPI sendMsg;
-							int current_pid = GetCurrentPid();
-							float cpu_usage_ratio = GetCpuUsageRatio(current_pid);
-							MEMORYSTATUSEX statex;
-							statex.dwLength = sizeof(statex);
-							GlobalMemoryStatusEx(&statex);
-							DWORD End = unsigned(GetTickCount64());
-							cpu_usage_ratio = cpu_usage_ratio * 100;
-							int cpu_usage = cpu_usage_ratio;
-							string msg = serverName + "服务器信息" + "%0A服务器版本:" + ll::getBdsVersion() + "%0ABDS协议号:" + to_string(ll::getServerProtocolVersion()) + "%0ALL版本号:" + ll::getLoaderVersionString() + " %0A进程PID: " + to_string(current_pid) + " %0ACPU使用率 : " + to_string(cpu_usage) + "%25%0ACPU核数:" + to_string(GetCpuNum()) + " %0A内存占用 : " + to_string(statex.dwMemoryLoad) + " %25%0A总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB%0A剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB%0A服务器启动时间:" + to_string((End - Start) / 1000 / 60 / 60 / 24) + "天" + to_string(((End - Start) / 1000 / 60 / 60) % 24) + "小时" + to_string(((End - Start) / 1000 / 60) % 60) + "分钟";
-							sendMsg.groupMsg(GROUPID, msg);
-							listPlayer();
-						}
-						else if (message == "菜单" && (timeChecker() == true || OpCheck(userid, role) == true))
-						{
-							msgAPI sendMsg;
-							string msg = "\# X-Robot%0A一个为BDS定制的LL机器人%0A> 功能列表%0A1. MC聊天->QQ的转发%0A2. list查在线玩家%0A3. QQ中%25发送消息到mc%0A4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"%0A5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询%0A6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
-							sendMsg.groupMsg(GROUPID, msg);
-						}
-						else if (timeChecker() == false && (message == "菜单" || message == "查服" || message == "list"))
-						{
-							//msgAPI sendMsg;
-							//sendMsg.groupMsg(GROUPID, "太着急了，待会再试叭");
-						}
-						if (message.find("%") == 0 && message.length() >= 3 && with_chat == true && QQforward == true)
-						{
-							message = message.substr(1, message.length());
-							thread msgCutTh(msgCut, message, username);//多线程处理
-							msgCutTh.detach();
-						}
-						else if (with_chat == false && QQforward == true)
-						{
-							thread msgCutTh(msgCut, message, username);//多线程处理
-							msgCutTh.detach();
-						}
-						if (message == "关服" && role == "owner")
-						{
-							Level::runcmd("stop");
-						}
-						if (message == "开服" && OpCheck(userid, role) == true)
-						{
-							Level::runcmd("stop");
-						}
-						if (message == "recovery" && OpCheck(userid, role) == true)
-						{
-							Level::runcmd("stop");
-						}
-
-						//ID与白名单相关
-
-						if (message.find("绑定") == 0 && message.length() > 6)
-						{
-							msgAPI sendMsg;
-							if (message.find("[CQ:") == message.npos && message.find("[mirai:") == message.npos)
-							{
-								if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
-								else if (message.substr(6, 1) != " ") { message = message.substr(6, message.length()); }
-								try {
-									json BlackBe = BlackBEGet(userid, message);
-									if (!BlackBe["data"]["exist"])
-									{
-										if ((BindID[message].empty() == false) && userid != BindID[message])
-										{
-											string bindqq = BindID[message];
-											string msg = "该账号已经被绑定了哦%0A请联系号主qq" + bindqq + "更改绑定后再试吧";
-											sendMsg.groupMsg(GROUPID, msg);
-											goto outBind;
-										}
-										string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
-										sendMsg.groupMsg(GROUPID, msg);
-										if (!BindID[userid].empty()) {
-											string XboxName = "";
-											XboxName = BindID[userid];
-											BindID.erase(BindID.find(userid));
-											BindID.erase(BindID.find(XboxName));
-											ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
-											a << std::setw(4) << BindID << std::endl;
-											a.close();
-											msg = "whitelist remove \"" + XboxName + "\"";
-											Level::runcmd(msg);
-										}
-										BindID[userid] = message;
-										BindID[message] = userid;
-										ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
-										a << std::setw(4) << BindID << std::endl;
-										a.close();
-										msg = "whitelist add \"" + message + "\"";
-										Level::runcmd(msg);
-									}
-									else if (BlackBe["data"]["exist"]) {
-										sendMsg.groupMsg(GROUPID, "玩家[CQ:at,qq=" + userid + "]账号被列于云黑，请用查云黑检查！");
-									}
-								}
-								catch (...)
-								{
-									sendMsg.groupMsg(GROUPID, "云黑检查失败，尝试不检查云黑进行绑定");
-									string msg = "你的XboxID为：" + message + " %0A正在为你绑定...";
+									string bindqq = BindID[message];
+									string msg = "该账号已经被绑定了哦\n请联系号主qq" + bindqq + "更改绑定后再试吧";
 									sendMsg.groupMsg(GROUPID, msg);
-									if (!BindID[userid].empty()) {
-										string XboxName = "";
-										XboxName = BindID[userid];
-										BindID.erase(BindID.find(userid));
-										BindID.erase(BindID.find(XboxName));
-										ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
-										a << std::setw(4) << BindID << std::endl;
-										a.close();
-										msg = "whitelist remove \"" + XboxName + "\"";
-										Level::runcmd(msg);
-									}
-									BindID[userid] = message;
-									BindID[message] = userid;
+									goto outBind;
+								}
+								string msg = "你的XboxID为：" + message + " \n正在为你绑定...";
+								sendMsg.groupMsg(GROUPID, msg);
+								if (!BindID[userid].empty()) {
+									string XboxName = "";
+									XboxName = BindID[userid];
+									BindID.erase(BindID.find(userid));
+									BindID.erase(BindID.find(XboxName));
 									ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 									a << std::setw(4) << BindID << std::endl;
 									a.close();
-									msg = "whitelist add \"" + message + "\"";
+									msg = "whitelist remove \"" + XboxName + "\"";
 									Level::runcmd(msg);
 								}
-							}
-							else
-							{
-								sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
-							}
-
-						}
-					outBind:;
-						if (message == "查询绑定")
-						{
-							msgAPI sendMsg;
-							string XboxName;
-							if (BindID[userid].empty())
-							{
-								XboxName = "未绑定";
-							}
-							else
-							{
-								XboxName = BindID[userid];
-							}
-							string msg = "玩家[CQ:at,qq=" + userid + "],你的绑定是: " + XboxName;
-							sendMsg.groupMsg(GROUPID, msg);
-
-						}
-						if (message.find("删除绑定") == 0 && message.length() > 12 && OpCheck(userid, role) == true)
-						{
-							if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
-							else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
-							if (message.find("[CQ:at,qq=") != message.npos)
-							{
-								message = message.substr(10, message.length() - 11);
-							}
-							msgAPI sendmsg;
-							string XboxName;
-							string msg;
-							try {
-								XboxName = BindID[message];
-								BindID.erase(BindID.find(message));
-								BindID.erase(BindID.find(XboxName));
-								msg = "whitelist remove " + XboxName;
-								Level::runcmd(msg);
+								BindID[userid] = message;
+								BindID[message] = userid;
 								ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 								a << std::setw(4) << BindID << std::endl;
 								a.close();
-								msg = "已删除玩家 " + XboxName + " 的绑定和白名单";
+								msg = "whitelist add \"" + message + "\"";
+								Level::runcmd(msg);
 							}
-							catch (...) { XboxName = "未绑定" + userid; msg = "玩家 [CQ:at,qq=" + message + "] 未绑定"; }
-							sendmsg.groupMsg(GROUPID, msg);
-
+							else if (BlackBe["data"]["exist"]) {
+								sendMsg.groupMsg(GROUPID, "玩家[CQ:at,qq=" + userid + "]账号被列于云黑，请用查云黑检查！");
+							}
 						}
-						if (message.find("查询绑定") == 0 && message.length() > 12 && OpCheck(userid, role) == true)
+						catch (...)
 						{
-							if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
-							else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
-							if (message.find("[CQ:at,qq=") != message.npos)
-							{
-								message = message.substr(10, message.length() - 11);
-							}
-							string XboxName;
-							if (BindID[message].empty())
-							{
-								XboxName = "未绑定";
-							}
-							else
-							{
-								XboxName = BindID[message];
-							}
-							string msg = "玩家 " + message + " 的绑定是: " + XboxName;
-							msgAPI sendMsg;
+							sendMsg.groupMsg(GROUPID, "云黑检查失败，尝试不检查云黑进行绑定");
+							string msg = "你的XboxID为：" + message + " \n正在为你绑定...";
 							sendMsg.groupMsg(GROUPID, msg);
-
-						}//查询他人绑定
-						if (message == "未绑定名单" && OpCheck(userid, role) == true)
-						{
-							msgAPI sendMsg;
-							json nameList = sendMsg.groupList(GROUPID, true);
-							string Num = "摸鱼人员名单:\n";
-							for (json::iterator it = nameList["data"].begin(); it != nameList["data"].end(); ++it) {
-								json secList = it.value();
-								string user_id = to_string(secList["user_id"]);
-								string noneNickname = secList["nickname"];
-								if (BindID[user_id].empty() == true)
-								{
-									Num = Num + "QQ:" + user_id + "," + "群名称:" + noneNickname + "\n";
-								}
+							if (!BindID[userid].empty()) {
+								string XboxName = "";
+								XboxName = BindID[userid];
+								BindID.erase(BindID.find(userid));
+								BindID.erase(BindID.find(XboxName));
+								ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+								a << std::setw(4) << BindID << std::endl;
+								a.close();
+								msg = "whitelist remove \"" + XboxName + "\"";
+								Level::runcmd(msg);
 							}
-							ofstream Text(".\\plugins\\X-Robot\\NoBindList.txt");
-							Text << Num << endl;
-							Text.close();
-
-							////////////////////////删除旧文件
-							httplib::Client cli(back_ip);
-							auto res = cli.Get("/get_group_root_files?group_id=" + GROUPID + "&access_token=" + accessToken);
-							json FileList = json::parse(res->body.begin(), res->body.end());
-							for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
-								json secList = it.value();
-								if (secList["file_name"] == "摸鱼人员名单.txt")
-								{
-									string file_id = secList["file_id"];
-									int busid = secList["busid"];
-									http = "/delete_group_file?group_id=" + GROUPID + "&file_id=" + file_id + "&busid=" + to_string(busid);
-									if (accessToken != "")
-									{
-										http = http + "&access_token=" + accessToken;
-									}
-									cli.Get(http);
-									break;
-								}
-							}
-							//////////////////上传新文件
-							cli.Get("/upload_group_file?group_id=" + GROUPID + "&file=..\\NoBindList.txt&name=摸鱼人员名单.txt&access_token=" + accessToken);
-							std::system("powershell rm plugins\\X-Robot\\NoBindList.txt");
-						}
-						if (message.find("查云黑") == 0 && message.length() > 9 && OpCheck(userid, role) == true)
-						{
-							thread BlackBeCheckTh(BlackBeCheck, message);
-							BlackBeCheckTh.detach();
-						}
-
-
-						//调试用指令
-
-						if (message == "强制崩溃" && OpCheck(userid, role) == true)
-						{
-							string crashString = "123456";
-							crashString = crashString.substr(100, 105);
-						}
-						//自定义指令集
-						//用新线程属于是性能换时间了
-						thread newthread(customMsg, message, username, cmdMsg, userid);
-						newthread.detach();
-
-
-					}
-					if (groupid == GROUPIDINT && notice_type == "group_increase" && whitelistAdd == true)
-					{
-						msgAPI sendMsg;
-						string msg;
-						msg = "欢迎新成员[CQ:at,qq=" + userid + "],发送\"绑定 ****\"进行绑定并获取白名单";
-						sendMsg.groupMsg(GROUPID, msg);
-					}
-					if (groupid == GROUPIDINT && notice_type == "group_decrease")
-					{
-						msgAPI sendmsg;
-						string XboxName;
-						try {
-							XboxName = BindID[userid];
-							BindID.erase(BindID.find(userid));
-							BindID.erase(BindID.find(XboxName));
+							BindID[userid] = message;
+							BindID[message] = userid;
 							ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
 							a << std::setw(4) << BindID << std::endl;
 							a.close();
+							msg = "whitelist add \"" + message + "\"";
+							Level::runcmd(msg);
 						}
-						catch (...) { XboxName = "未绑定" + userid; }
-						string msg = XboxName + "(QQ" + userid + ")离开了我们 %0A已自动删除白名单";
-						sendmsg.groupMsg(GROUPID, msg);
+					}
+					else
+					{
+						sendMsg.groupMsg(GROUPID, "不要往绑定名单中塞奇怪的东西啊啊啊");
+					}
+
+				}
+			outBind:;
+				if (message == "查询绑定")
+				{
+					msgAPI sendMsg;
+					string XboxName;
+					if (BindID[userid].empty())
+					{
+						XboxName = "未绑定";
+					}
+					else
+					{
+						XboxName = BindID[userid];
+					}
+					string msg = "玩家[CQ:at,qq=" + userid + "],你的绑定是: " + XboxName;
+					sendMsg.groupMsg(GROUPID, msg);
+
+				}
+				if (message.find("删除绑定") == 0 && message.length() > 12 && OpCheck(userid, role) == true)
+				{
+					if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
+					else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
+					if (message.find("[CQ:at,qq=") != message.npos)
+					{
+						message = message.substr(10, message.length() - 12);
+					}
+					msgAPI sendmsg;
+					string XboxName;
+					string msg;
+					try {
+						XboxName = BindID[message];
+						BindID.erase(BindID.find(message));
+						BindID.erase(BindID.find(XboxName));
 						msg = "whitelist remove " + XboxName;
 						Level::runcmd(msg);
+						ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+						a << std::setw(4) << BindID << std::endl;
+						a.close();
+						msg = "已删除玩家 " + XboxName + " 的绑定和白名单";
 					}
-					string sedbuf = "HTTP/1.1 200 OK\r\n";
-					// Echo the buffer back to the sender
-					iSendResult = send(ClientSocket, sedbuf.c_str(), (int)sedbuf.length(), 0);
-					sedbuf = "Cache-Control:public\r\nContent-Type:text/plain;charset=ASCII\r\nServer:Tengine/1.4.6\r\n\r\n";
-					iSendResult = send(ClientSocket, sedbuf.c_str(), (int)sedbuf.length(), 0);
-					if (iSendResult == SOCKET_ERROR) {
-						printf("send failed: %d\n", WSAGetLastError());
-						closesocket(ClientSocket);
-						WSACleanup();
-						closesocket(ListenSocket);
-						WSACleanup();
-						cout << "reloading" << endl;
-						goto reload;
-						//return 1;
+					catch (...) { XboxName = "未绑定" + userid; msg = "玩家 [CQ:at,qq=" + message + "] 未绑定"; }
+					sendmsg.groupMsg(GROUPID, msg);
+
+				}
+				if (message.find("查询绑定") == 0 && message.length() > 12 && OpCheck(userid, role) == true)
+				{
+					if (message.substr(12, 1) == " " && message.length() > 13) { message = message.substr(13, message.length()); }
+					else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
+					if (message.find("[CQ:at,qq=") != message.npos)
+					{
+						message = message.substr(10, message.length() - 12);
 					}
+					string XboxName;
+					if (BindID[message].empty())
+					{
+						XboxName = "未绑定";
+					}
+					else
+					{
+						XboxName = BindID[message];
+					}
+					string msg = "玩家 " + message + " 的绑定是: " + XboxName;
+					msgAPI sendMsg;
+					sendMsg.groupMsg(GROUPID, msg);
 
+				}//查询他人绑定
+				if (message == "未绑定名单" && OpCheck(userid, role) == true)
+				{
+					get_list_status = 1;
+					groupList(GROUPID,1);
 
 				}
-
-				else if (iResult == 0)
-					printf("Connection ended...\n");
-				else {
-					printf("recv failed: %d\n", WSAGetLastError());
-					closesocket(ClientSocket);
-					WSACleanup();
-					return 1;
+				if (message.find("查云黑") == 0 && message.length() > 9 && OpCheck(userid, role) == true)
+				{
+					thread BlackBeCheckTh(BlackBeCheck, message);
+					BlackBeCheckTh.detach();
 				}
 
-				// shutdown the send half of the connection since no more data will be sent
-				iResult = shutdown(ClientSocket, SD_SEND);
-				if (iResult == SOCKET_ERROR) {
-					printf("shutdown failed: %d\n", WSAGetLastError());
-					closesocket(ClientSocket);
-					WSACleanup();
-					return 1;
-				}
 
-			} while (iResult > 0);
+				//调试用指令
+
+				if (message == "强制崩溃" && OpCheck(userid, role) == true)
+				{
+					string crashString = "123456";
+					crashString = crashString.substr(100, 105);
+				}
+				//自定义指令集
+				//用新线程属于是性能换时间了
+				thread newthread(customMsg, message, username, cmdMsg, userid);
+				newthread.detach();
+
+
+			}
+			if (groupid == GROUPIDINT && notice_type == "group_increase" && whitelistAdd == true)
+			{
+				msgAPI sendMsg;
+				string msg;
+				msg = "欢迎新成员[CQ:at,qq=" + userid + "],发送\"绑定 ****\"进行绑定并获取白名单";
+				sendMsg.groupMsg(GROUPID, msg);
+			}
+			if (groupid == GROUPIDINT && notice_type == "group_decrease")
+			{
+				msgAPI sendmsg;
+				string XboxName;
+				try {
+					XboxName = BindID[userid];
+					BindID.erase(BindID.find(userid));
+					BindID.erase(BindID.find(XboxName));
+					ofstream a(".\\plugins\\X-Robot\\BindID.json");//储存绑定数据
+					a << std::setw(4) << BindID << std::endl;
+					a.close();
+				}
+				catch (...) { XboxName = "未绑定" + userid; }
+				string msg = XboxName + "(QQ" + userid + ")离开了我们 \n已自动删除白名单";
+				sendmsg.groupMsg(GROUPID, msg);
+				msg = "whitelist remove " + XboxName;
+				Level::runcmd(msg);
+			}
 		}
-		return 1;
+		else {
+			m_messages.push_back("<< " + websocketpp::utility::to_hex(msg->get_payload()));
+		}
 	}
-	catch (...) {
-		XLog.error("机器人发生崩溃qwq，正在生成错误日志");
-		SYSTEMTIME sys;
-		GetLocalTime(&sys);
-		string cmd = "echo f | xcopy .\\plugins\\X-Robot\\LastestLog.txt .\\plugins\\X-Robot\\CrashLog\\CrashLog-" + to_string(sys.wYear) + "-" + to_string(sys.wMonth) + "-" + to_string(sys.wDay) + "-" + to_string(sys.wHour) + ".txt /y";
-		FileLog.error("机器人崩溃!");
-		system(cmd.c_str());
-		closesocket(ClientSocket);
-		WSACleanup();
-		closesocket(ListenSocket);
-		WSACleanup();
-		goto reload;
-	}//崩溃日志
+
+	websocketpp::connection_hdl get_hdl() const {
+		return m_hdl;
+	}
+
+	int get_id() const {
+		return m_id;
+	}
+
+	std::string get_status() const {
+		return m_status;
+	}
+
+	void record_sent_message(std::string message) {
+	}
+
+	friend std::ostream& operator<< (std::ostream& out, connection_metadata const& data);
+private:
+	int m_id;
+	websocketpp::connection_hdl m_hdl;
+	std::string m_status;
+	std::string m_uri;
+	std::string m_server;
+	std::string m_error_reason;
+	std::vector<std::string> m_messages;
+};
+
+std::ostream& operator<< (std::ostream& out, connection_metadata const& data) {
+	out << "> URI: " << data.m_uri << "\n"
+		<< "> Status: " << data.m_status << "\n"
+		<< "> Remote Server: " << (data.m_server.empty() ? "None Specified" : data.m_server) << "\n"
+		<< "> Error/close reason: " << (data.m_error_reason.empty() ? "N/A" : data.m_error_reason) << "\n";
+	out << "> Messages Processed: (" << data.m_messages.size() << ") \n";
+
+	std::vector<std::string>::const_iterator it;
+	for (it = data.m_messages.begin(); it != data.m_messages.end(); ++it) {
+		out << *it << "\n";
+	}
+
+	return out;
+}
+
+class websocket_endpoint {
+public:
+	websocket_endpoint() : m_next_id(0) {
+		m_endpoint.clear_access_channels(websocketpp::log::alevel::all);
+		m_endpoint.clear_error_channels(websocketpp::log::elevel::all);
+
+		m_endpoint.init_asio();
+		m_endpoint.start_perpetual();
+
+		m_thread = websocketpp::lib::make_shared<websocketpp::lib::thread>(&client::run, &m_endpoint);
+	}
+
+	~websocket_endpoint() {
+		m_endpoint.stop_perpetual();
+
+		for (con_list::const_iterator it = m_connection_list.begin(); it != m_connection_list.end(); ++it) {
+			if (it->second->get_status() != "Open") {
+				// Only close open connections
+				continue;
+			}
+
+			std::cout << "> Closing connection " << it->second->get_id() << std::endl;
+
+			websocketpp::lib::error_code ec;
+			m_endpoint.close(it->second->get_hdl(), websocketpp::close::status::going_away, "", ec);
+			if (ec) {
+				std::cout << "> Error closing connection " << it->second->get_id() << ": "
+					<< ec.message() << std::endl;
+			}
+		}
+		cout << "closed" << endl;
+		m_thread->join();
+	}
+
+	int connect(std::string const& uri) {
+		websocketpp::lib::error_code ec;
+
+		client::connection_ptr con = m_endpoint.get_connection(uri, ec);
+
+		if (ec) {
+			std::cout << "> Connect initialization error: " << ec.message() << std::endl;
+			return -1;
+		}
+
+		int new_id = m_next_id++;
+		connection_metadata::ptr metadata_ptr = websocketpp::lib::make_shared<connection_metadata>(new_id, con->get_handle(), uri);
+		m_connection_list[new_id] = metadata_ptr;
+
+		con->set_open_handler(websocketpp::lib::bind(
+			&connection_metadata::on_open,
+			metadata_ptr,
+			&m_endpoint,
+			websocketpp::lib::placeholders::_1
+		));
+		con->set_fail_handler(websocketpp::lib::bind(
+			&connection_metadata::on_fail,
+			metadata_ptr,
+			&m_endpoint,
+			websocketpp::lib::placeholders::_1
+		));
+		con->set_close_handler(websocketpp::lib::bind(
+			&connection_metadata::on_close,
+			metadata_ptr,
+			&m_endpoint,
+			websocketpp::lib::placeholders::_1
+		));
+		con->set_message_handler(websocketpp::lib::bind(
+			&connection_metadata::on_message,
+			metadata_ptr,
+			websocketpp::lib::placeholders::_1,
+			websocketpp::lib::placeholders::_2
+		));
+
+		m_endpoint.connect(con);
+
+		return new_id;
+	}
+
+	void close(int id, websocketpp::close::status::value code, std::string reason) {
+		websocketpp::lib::error_code ec;
+
+		con_list::iterator metadata_it = m_connection_list.find(id);
+		if (metadata_it == m_connection_list.end()) {
+			std::cout << "> No connection found with id " << id << std::endl;
+			return;
+		}
+
+		m_endpoint.close(metadata_it->second->get_hdl(), code, reason, ec);
+		if (ec) {
+			std::cout << "> Error initiating close: " << ec.message() << std::endl;
+		}
+	}
+
+	void send(int id, std::string message) {
+		websocketpp::lib::error_code ec;
+
+		con_list::iterator metadata_it = m_connection_list.find(id);
+		if (metadata_it == m_connection_list.end()) {
+			std::cout << "> No connection found with id " << id << std::endl;
+			return;
+		}
+
+		m_endpoint.send(metadata_it->second->get_hdl(), message, websocketpp::frame::opcode::text, ec);
+		if (ec) {
+			std::cout << "> Error sending message: " << ec.message() << std::endl;
+			return;
+		}
+
+		metadata_it->second->record_sent_message(message);
+	}
+
+	connection_metadata::ptr get_metadata(int id) const {
+		con_list::const_iterator metadata_it = m_connection_list.find(id);
+		if (metadata_it == m_connection_list.end()) {
+			return connection_metadata::ptr();
+		}
+		else {
+			return metadata_it->second;
+		}
+	}
+private:
+	typedef std::map<int, connection_metadata::ptr> con_list;
+
+	client m_endpoint;
+	websocketpp::lib::shared_ptr<websocketpp::lib::thread> m_thread;
+
+	con_list m_connection_list;
+	int m_next_id;
+};
+
+websocket_endpoint endpoint;
+
+void msgAPI::privateMsg(string QQnum, string msg)
+{
+
+}
+void groupMsgSend(string group_id, string msg)
+{
+	msg = "{\"action\": \"send_group_msg\",\"params\": {\"group_id\": \"" + group_id + "\",\"message\": \"" + msg + "\",\"auto_escape\": \"false\",\"access_token=\": \""+accessToken+"\" }}";
+	endpoint.send(0, msg);
+}
+void msgAPI::groupMsg(string group_id, string msg)
+{
+	thread groupMsgTh(groupMsgSend, group_id, msg);
+	groupMsgTh.detach();
+}
+void groupList(string group_id,int status)
+{
+	if (status == 1)
+	{
+		string abcd = "{\"action\": \"get_group_member_list\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"no_cache\": \"true\"}}";
+		endpoint.send(0, abcd);
+	}
+	if (status == 3)
+	{
+		string abcd = "{\"action\": \"get_group_root_files\",\"params\": {\"group_id\": \"" + GROUPID + "\"}}";
+		endpoint.send(0, abcd);
+	}
+	if (status == 4)
+	{
+		string abcd = "{\"action\": \"delete_group_file\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"file_id\": \"" + file_id + "\",\"busid\": \"" + to_string(busid) + "\"}}";
+		endpoint.send(0, abcd);
+	}
+	if (status == 5)
+	{
+		string abcd = "{\"action\": \"upload_group_file\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"file\": \"..\\NoBindList.txt\",\"name\": \"NoBindList.txt\"}}";
+		endpoint.send(0, abcd);
+		std::system("powershell rm plugins\\X-Robot\\NoBindList.txt");
+	}
 }
 
 extern Logger loggerPlu;
 
 void PluginInit()
 {
+
 	CheckProtocolVersion();
 	Logger logger(PLUGIN_NAME);
 	logger.info("若见Websocket Loaded则机器人启动成功");
@@ -963,7 +1036,6 @@ void PluginInit()
 	GROUPIDINT = info["QQ_group_id"];
 	GROUPID = std::to_string(GROUPIDINT);
 	serverName = info["serverName"];
-	port = info["port"];
 	accessToken = info["accessToken"];
 
 	with_chat = info["settings"]["with_chat"];
@@ -975,10 +1047,10 @@ void PluginInit()
 	SrvInfoCommand = info["settings"]["SrvInfo"];
 	messageTime = info["settings"]["messageTime"];
 	CommandForward = info["settings"]["CommandForward"];
-	back_ip = info["back_ip"];
+	cq_ip = info["cq_ip"];
 	infoFile.close();
 
-	std::cout << "转发QQ群：" << GROUPID << endl << "服务器名称：" << serverName << endl << "转发端口：" << port << endl;
+	std::cout << "转发QQ群：" << GROUPID << endl << "服务器名称：" << serverName << endl << "转发地址：" << cq_ip << endl;
 
 
 	//绑定名单的读取和写入
@@ -1016,12 +1088,11 @@ void PluginInit()
 	}
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
-	thread tl(websocketsrv);
-	tl.detach();
+	int id = endpoint.connect(cq_ip);
+	if (id != -1) {
+		std::cout << "> Created connection with id " << id << std::endl;
+	}
 
-	//机器人账号检测
-	thread Online(GetState);
-	Online.detach();
 
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)
 		{

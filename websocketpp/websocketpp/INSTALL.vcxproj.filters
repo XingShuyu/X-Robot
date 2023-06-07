@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\ning1\Desktop\plugin\websocketpp\CMakeFiles\9cdb9b7cd5720f2576d8946fd6f61a93\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{DA3C5874-7029-3D9B-8029-21BFC251D52C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

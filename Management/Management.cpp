@@ -9,7 +9,6 @@
 #include <iostream>
 #include <fstream>
 #include "yaml-cpp/yaml.h"
-#include "httplib.h"
 #include "nlohmann/json.hpp"
 #include <windows.h>
 #include <winsock2.h>
@@ -17,11 +16,20 @@
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <TlHelp32.h>
+#include <websocketpp/config/asio_no_tls_client.hpp>
+#include <websocketpp/client.hpp>
 
 
-#pragma comment(lib, "Ws2_32.lib")
+#include <websocketpp/common/thread.hpp>
+#include <websocketpp/common/memory.hpp>
 
+#include <cstdlib>
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
 
+typedef websocketpp::client<websocketpp::config::asio_client> client;
 
 using namespace std;
 using namespace YAML;
@@ -33,7 +41,7 @@ bool start_mode;
 string accessToken;
 string SaveName;
 string backupList[5];
-string back_ip;
+string cq_ip;
 
 //go-cqhttp的API封装
 class msgAPI
@@ -43,29 +51,9 @@ public:
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
 };
-void msgAPI::privateMsg(string QQnum, string msg)
-{
-	httplib::Client cli(back_ip);
-	string http = "/send_private_msg?user_id=" + QQnum + "&message=" + msg;
-	const char* path = http.c_str();
-	auto res = cli.Get(path);
-
-}
-void msgAPI::groupMsg(string group_id, string msg)
-{
-	httplib::Client cli(back_ip);
-	string http = "/send_group_msg?group_id=" + group_id + "&message=" + msg;
-	if (accessToken != "")
-	{
-		http = http + "&access_token=" + accessToken;
-	}
-	const char* path = http.c_str();
-	auto res = cli.Get(path);
-}
 
 
 INT64 GROUPIDINT;
-string port;
 string serverName;
 int backupTime;
 
@@ -147,181 +135,6 @@ inline bool OpCheck(string userid, string role)
 
 
 
-
-inline int websocketsrv()
-{
-reload:WSADATA wsaData;
-	int iResult;
-	// Initialize Winsock
-	iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (iResult != 0) {
-		printf("WSAStartup failed: %d\n", iResult);
-		return 1;
-	}
-#define DEFAULT_PORT port.c_str()
-
-	struct addrinfo* result = NULL, * ptr = NULL, hints;
-
-	ZeroMemory(&hints, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
-	hints.ai_flags = AI_PASSIVE;
-
-	// Resolve the local address and port to be used by the server
-	iResult = getaddrinfo(NULL, DEFAULT_PORT, &hints, &result);
-	if (iResult != 0) {
-		printf("getaddrinfo failed: %d\n", iResult);
-		WSACleanup();
-		return 1;
-	}
-
-	SOCKET ListenSocket = INVALID_SOCKET;
-	// Create a SOCKET for the server to listen for client connections
-
-	ListenSocket = socket(result->ai_family, result->ai_socktype, result->ai_protocol);
-	if (ListenSocket == INVALID_SOCKET) {
-		printf("Error at socket(): %ld\n", WSAGetLastError());
-		freeaddrinfo(result);
-		WSACleanup();
-		return 1;
-	}
-	// Setup the TCP listening socket
-	iResult = ::bind(ListenSocket, result->ai_addr, (int)result->ai_addrlen);
-	if (iResult == SOCKET_ERROR) {
-		printf("bind failed with error: %d\n", WSAGetLastError());
-		freeaddrinfo(result);
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-	freeaddrinfo(result);
-	if (listen(ListenSocket, SOMAXCONN) == SOCKET_ERROR) {
-		printf("Listen failed with error: %ld\n", WSAGetLastError());
-		closesocket(ListenSocket);
-		WSACleanup();
-		return 1;
-	}
-
-
-	cout << "Websocket Loaded" << endl;;
-	SOCKET ClientSocket;
-	while (1)
-	{
-		ClientSocket = INVALID_SOCKET;
-		// Accept a client socket
-		ClientSocket = accept(ListenSocket, NULL, NULL);
-		if (ClientSocket == INVALID_SOCKET) {
-			printf("accept failed: %d\n", WSAGetLastError());
-			closesocket(ListenSocket);
-			WSACleanup();
-			return 1;
-		}
-#define DEFAULT_BUFLEN 4096
-
-		char recvbuf[DEFAULT_BUFLEN];
-		int iResult, iSendResult;
-		int recvbuflen = DEFAULT_BUFLEN;
-
-		// Receive until the peer shuts down the connection
-		do {
-
-			iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);
-			if (iResult > 0) {
-
-				string jsonmsg = recvbuf;
-				jsonmsg = jsonmsg.substr(0, iResult);
-				jsonmsg = jsonmsg.substr(jsonmsg.find("{"), jsonmsg.find("}"));
-				// parse explicitly
-				json jm;
-				try
-				{
-					jm = json::parse(jsonmsg.begin(), jsonmsg.end());
-				}
-				catch (...) {}
-				string msgtype;
-				string message;
-				string userid = "";
-				string username;
-				int groupid = 0;
-				string role = "member";
-				string notice_type;
-				string post_type;
-				try { msgtype = jm["message_type"]; }//msgtype为消息类型，具体见CQ-http：事件
-				catch (...) {}
-				try { message = jm["message"]; }//message为消息内容，为string
-				catch (...) {}
-				try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
-				catch (...) {}
-				try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为int
-				catch (...) {}
-				try { post_type = to_string(jm["post_type"]); }//post_type为消息类型号，为string
-				catch (...) {}
-				try
-				{
-					username = jm["sender"]["card"];
-					if (username == "")
-					{
-						username = jm["sender"]["nickname"];
-					}
-				}//username，为发送者的的群昵称（优先）或者用户名，为string
-				catch (...) {}
-				try { groupid = jm["group_id"]; }//groupid为消息来源的QQ群，为int
-				catch (...) {}
-				try { notice_type = jm["notice_type"]; }
-				catch (...) { notice_type = ""; }
-				//消息处理
-				if (groupid == GROUPIDINT)
-				{
-					if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
-					{
-						cout << "正在开服" << endl;
-						thread lunchSrv(lunch);
-						lunchSrv.detach();
-					}
-				}
-				string sedbuf = "HTTP/1.1 200 OK\r\n";
-				// Echo the buffer back to the sender
-				iSendResult = send(ClientSocket, sedbuf.c_str(), sedbuf.length(), 0);
-				sedbuf = "Cache-Control:public\r\nContent-Type:text/plain;charset=ASCII\r\nServer:Tengine/1.4.6\r\n\r\n";
-				iSendResult = send(ClientSocket, sedbuf.c_str(), sedbuf.length(), 0);
-				if (iSendResult == SOCKET_ERROR) {
-					printf("send failed: %d\n", WSAGetLastError());
-					closesocket(ClientSocket);
-					WSACleanup();
-					closesocket(ListenSocket);
-					WSACleanup();
-					cout << "reloading" << endl;
-					goto reload;
-					//return 1;
-				}
-
-			}
-			else if (iResult == 0)
-				printf("Connection ended...\n");
-			else {
-				printf("recv failed: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
-			}
-
-			// shutdown the send half of the connection since no more data will be sent
-			iResult = shutdown(ClientSocket, SD_SEND);
-			if (iResult == SOCKET_ERROR) {
-				printf("shutdown failed: %d\n", WSAGetLastError());
-				closesocket(ClientSocket);
-				WSACleanup();
-				return 1;
-			}
-
-		} while (iResult > 0);
-	}
-
-	return 1;
-}
-
-
 int configCQ()
 {
 	std::cout << "配置 go-cqhttp\n";
@@ -348,6 +161,297 @@ int startCq()
 }
 
 
+class connection_metadata {
+public:
+	typedef websocketpp::lib::shared_ptr<connection_metadata> ptr;
+
+	connection_metadata(int id, websocketpp::connection_hdl hdl, std::string uri)
+		: m_id(id)
+		, m_hdl(hdl)
+		, m_status("Connecting")
+		, m_uri(uri)
+		, m_server("N/A")
+	{}
+
+	void on_open(client* c, websocketpp::connection_hdl hdl) {
+		m_status = "Open";
+
+		client::connection_ptr con = c->get_con_from_hdl(hdl);
+		m_server = con->get_response_header("Server");
+	}
+
+	void on_fail(client* c, websocketpp::connection_hdl hdl) {
+		m_status = "Failed";
+
+		client::connection_ptr con = c->get_con_from_hdl(hdl);
+		m_server = con->get_response_header("Server");
+		m_error_reason = con->get_ec().message();
+	}
+
+	void on_close(client* c, websocketpp::connection_hdl hdl) {
+		m_status = "Closed";
+		client::connection_ptr con = c->get_con_from_hdl(hdl);
+		std::stringstream s;
+		s << "close code: " << con->get_remote_close_code() << " ("
+			<< websocketpp::close::status::get_string(con->get_remote_close_code())
+			<< "), close reason: " << con->get_remote_close_reason();
+		m_error_reason = s.str();
+	}
+
+	void on_message(websocketpp::connection_hdl, client::message_ptr msg) {
+		if (msg->get_opcode() == websocketpp::frame::opcode::text) {
+			string jsonmsg = msg->get_payload();
+			if (jsonmsg.find("\"meta_event_type\":\"heartbeat\"") == jsonmsg.npos)
+			{
+				struct _stat info;
+				_stat(".\\plugins\\X-Robot\\LastestLog.txt", &info);
+				int size = info.st_size;
+				if (size / 1024 / 1024 > 10) {
+					ofstream a;
+					a.open(".\\plugins\\X-Robot\\LastestLog.txt");
+					a << "";
+					a.close();
+				}
+			}
+			//cout <<"/////////////////////////////" << jsonmsg << "////////////////////////////////" << endl;
+				// parse explicitly
+			json jm;
+			try
+			{
+				jm = json::parse(jsonmsg.begin(), jsonmsg.end());
+			}
+			catch (...) { }
+			string userid;
+			string username;
+			INT64 groupid = 0;
+			string role = "member";
+			string notice_type;
+			string post_type;
+			string message;
+			try { message = jm["message"]; }//message为消息内容，为string
+			catch (...) {}
+			try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
+			catch (...) {}
+			try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为string
+			catch (...) {}
+			try
+			{
+				username = jm["sender"]["card"];
+				if (username == "")
+				{
+					username = jm["sender"]["nickname"];
+				}
+			}//username，为发送者的的群昵称（优先）或者用户名，为string
+			catch (...) {}
+			try { groupid = jm["group_id"]; }//groupid为消息来源的QQ群，为int
+			catch (...) {}
+			try { notice_type = jm["notice_type"]; }
+			catch (...) { notice_type = ""; }
+			try { post_type = jm["post_type"]; }
+			catch (...) { post_type = ""; }
+			//消息处理
+			if (groupid == GROUPIDINT)
+			{
+				if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
+				{
+					cout << "正在开服" << endl;
+					thread lunchSrv(lunch);
+					lunchSrv.detach();
+				}
+			}
+		}
+		else {
+			m_messages.push_back("<< " + websocketpp::utility::to_hex(msg->get_payload()));
+		}
+	}
+
+	websocketpp::connection_hdl get_hdl() const {
+		return m_hdl;
+	}
+
+	int get_id() const {
+		return m_id;
+	}
+
+	std::string get_status() const {
+		return m_status;
+	}
+
+	void record_sent_message(std::string message) {
+	}
+
+	friend std::ostream& operator<< (std::ostream& out, connection_metadata const& data);
+private:
+	int m_id;
+	websocketpp::connection_hdl m_hdl;
+	std::string m_status;
+	std::string m_uri;
+	std::string m_server;
+	std::string m_error_reason;
+	std::vector<std::string> m_messages;
+};
+
+std::ostream& operator<< (std::ostream& out, connection_metadata const& data) {
+	out << "> URI: " << data.m_uri << "\n"
+		<< "> Status: " << data.m_status << "\n"
+		<< "> Remote Server: " << (data.m_server.empty() ? "None Specified" : data.m_server) << "\n"
+		<< "> Error/close reason: " << (data.m_error_reason.empty() ? "N/A" : data.m_error_reason) << "\n";
+	out << "> Messages Processed: (" << data.m_messages.size() << ") \n";
+
+	std::vector<std::string>::const_iterator it;
+	for (it = data.m_messages.begin(); it != data.m_messages.end(); ++it) {
+		out << *it << "\n";
+	}
+
+	return out;
+}
+
+class websocket_endpoint {
+public:
+	websocket_endpoint() : m_next_id(0) {
+		m_endpoint.clear_access_channels(websocketpp::log::alevel::all);
+		m_endpoint.clear_error_channels(websocketpp::log::elevel::all);
+
+		m_endpoint.init_asio();
+		m_endpoint.start_perpetual();
+
+		m_thread = websocketpp::lib::make_shared<websocketpp::lib::thread>(&client::run, &m_endpoint);
+	}
+
+	~websocket_endpoint() {
+		m_endpoint.stop_perpetual();
+
+		for (con_list::const_iterator it = m_connection_list.begin(); it != m_connection_list.end(); ++it) {
+			if (it->second->get_status() != "Open") {
+				// Only close open connections
+				continue;
+			}
+
+			std::cout << "> Closing connection " << it->second->get_id() << std::endl;
+
+			websocketpp::lib::error_code ec;
+			m_endpoint.close(it->second->get_hdl(), websocketpp::close::status::going_away, "", ec);
+			if (ec) {
+				std::cout << "> Error closing connection " << it->second->get_id() << ": "
+					<< ec.message() << std::endl;
+			}
+		}
+		cout << "CClosed" << endl;
+		m_thread->join();
+	}
+
+	int connect(std::string const& uri) {
+		websocketpp::lib::error_code ec;
+
+		client::connection_ptr con = m_endpoint.get_connection(uri, ec);
+
+		if (ec) {
+			std::cout << "> Connect initialization error: " << ec.message() << std::endl;
+			return -1;
+		}
+
+		int new_id = m_next_id++;
+		connection_metadata::ptr metadata_ptr = websocketpp::lib::make_shared<connection_metadata>(new_id, con->get_handle(), uri);
+		m_connection_list[new_id] = metadata_ptr;
+
+		con->set_open_handler(websocketpp::lib::bind(
+			&connection_metadata::on_open,
+			metadata_ptr,
+			&m_endpoint,
+			websocketpp::lib::placeholders::_1
+		));
+		con->set_fail_handler(websocketpp::lib::bind(
+			&connection_metadata::on_fail,
+			metadata_ptr,
+			&m_endpoint,
+			websocketpp::lib::placeholders::_1
+		));
+		con->set_close_handler(websocketpp::lib::bind(
+			&connection_metadata::on_close,
+			metadata_ptr,
+			&m_endpoint,
+			websocketpp::lib::placeholders::_1
+		));
+		con->set_message_handler(websocketpp::lib::bind(
+			&connection_metadata::on_message,
+			metadata_ptr,
+			websocketpp::lib::placeholders::_1,
+			websocketpp::lib::placeholders::_2
+		));
+
+		m_endpoint.connect(con);
+
+		return new_id;
+	}
+
+	void close(int id, websocketpp::close::status::value code, std::string reason) {
+		websocketpp::lib::error_code ec;
+
+		con_list::iterator metadata_it = m_connection_list.find(id);
+		if (metadata_it == m_connection_list.end()) {
+			std::cout << "> No connection found with id " << id << std::endl;
+			return;
+		}
+
+		m_endpoint.close(metadata_it->second->get_hdl(), code, reason, ec);
+		if (ec) {
+			std::cout << "> Error initiating close: " << ec.message() << std::endl;
+		}
+	}
+
+	void send(int id, std::string message) {
+		websocketpp::lib::error_code ec;
+
+		con_list::iterator metadata_it = m_connection_list.find(id);
+		if (metadata_it == m_connection_list.end()) {
+			std::cout << "> No connection found with id " << id << std::endl;
+			return;
+		}
+
+		m_endpoint.send(metadata_it->second->get_hdl(), message, websocketpp::frame::opcode::text, ec);
+		if (ec) {
+			std::cout << "> Error sending message: " << ec.message() << std::endl;
+			return;
+		}
+
+		metadata_it->second->record_sent_message(message);
+	}
+
+	connection_metadata::ptr get_metadata(int id) const {
+		con_list::const_iterator metadata_it = m_connection_list.find(id);
+		if (metadata_it == m_connection_list.end()) {
+			return connection_metadata::ptr();
+		}
+		else {
+			return metadata_it->second;
+		}
+	}
+private:
+	typedef std::map<int, connection_metadata::ptr> con_list;
+
+	client m_endpoint;
+	websocketpp::lib::shared_ptr<websocketpp::lib::thread> m_thread;
+
+	con_list m_connection_list;
+	int m_next_id;
+};
+
+websocket_endpoint endpoint;
+
+void msgAPI::privateMsg(string QQnum, string msg)
+{
+
+}
+void groupMsgSend(string group_id, string msg)
+{
+	msg = "{\"action\": \"send_group_msg\",\"params\": {\"group_id\": \"" + group_id + "\",\"message\": \"" + msg + "\",\"auto_escape\": \"false\",\"access_token=\": \"" + accessToken + "\" }}";
+	endpoint.send(0, msg);
+}
+void msgAPI::groupMsg(string group_id, string msg)
+{
+	thread groupMsgTh(groupMsgSend, group_id, msg);
+	groupMsgTh.detach();
+}
 
 
 int main()
@@ -361,8 +465,7 @@ int main()
 	infoFile >> info;
 	GROUPIDINT = info["QQ_group_id"];
 	serverName = info["serverName"];
-	port = info["manager_port"];
-	back_ip = info["back_ip"];
+	cq_ip = info["cq_ip"];
 	start_mode = info["manager"]["start_mode"];
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
 	accessToken = info["accessToken"];
@@ -416,7 +519,26 @@ int main()
 		thread tl(startCq);
 		tl.detach();
 	}
-	websocketsrv();
+	cout << "请等待cq启动后输入任何以继续" << endl;
+	int a;
+	cin >> a;
+	int id = endpoint.connect(cq_ip);
+	if (id != -1) {
+		std::cout << "> Created connection with id " << id << std::endl;
+	}
+
+	bool done = false;
+	while (!done)
+	{
+		string cmd;
+		cin >> cmd;
+		if (cmd == "exit")
+		{
+			done = true;
+
+		}
+	}
+	return 0;
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

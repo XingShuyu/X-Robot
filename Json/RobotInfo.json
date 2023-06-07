@@ -5,9 +5,7 @@
     "multi_server": false,
     "start_mode": false
   },
-  "manager_port": "5702",
-  "port": "5701",
-  "back_ip": "127.0.0.1:5700",
+  "cq_ip": "ws://127.0.0.1:9002",
   "QQ_group_id": 722047078,
   "serverName": "Your Server Name",
   "accessToken": "",
