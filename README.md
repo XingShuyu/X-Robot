@@ -45,7 +45,8 @@ Lip安装（首选）
 配置文件详解:
 
 
-![image](https://user-images.githubusercontent.com/82715884/207810448-0243a1da-2e92-4763-a70d-827558429d71.png)
+![image](https://user-images.githubusercontent.com/82715884/235444748-c7ef4629-b541-4f74-9b74-df9cfc4a9f7d.png)
+
 
 >常见问题
 Q：面板服总是报“CQ疑似异常，正在尝试重启"，QQ发消息总是不回应
