@@ -448,7 +448,7 @@ public:
 			INT64 groupid = 0;
 			string role = "member";
 			string notice_type;
-			string post_type;
+			string post_type="";
 			try { message = jm["message"]; }//message为消息内容，为string
 			catch (...) {}
 			try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
@@ -471,7 +471,7 @@ public:
 			try { post_type = jm["post_type"]; }
 			catch (...) { post_type = ""; }
 			//消息处理
-			if (get_list_status == 3)
+			if (get_list_status == 3 && notice_type == "" && post_type == "")
 			{
 				////////////////////////删除旧文件
 				json FileList = jm;
@@ -491,7 +491,7 @@ public:
 				get_list_status = 0;
 				groupList(GROUPID, 5);
 			}
-			if (get_list_status == 1)
+			if (get_list_status == 1 && notice_type == "" && post_type == "")
 			{
 				get_list_status = 2;
 				msgAPI sendMsg;
