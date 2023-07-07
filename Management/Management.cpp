@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#pragma comment(lib, "Iphlpapi.lib")
+#pragma comment(lib, "Ws2_32.lib")
 
 #include <iostream>
 #include <fstream>
@@ -28,6 +30,8 @@
 #include <map>
 #include <string>
 #include <sstream>
+#include <tcpmib.h>
+
 
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
@@ -91,7 +95,30 @@ string UTF8_2_GBK(string utf8Str)
 	return outGBK;
 }
 
-
+BOOL GetTcpPortState(ULONG nPort)
+{
+	MIB_TCPTABLE TcpTable[1024];
+	DWORD nSize = sizeof(TcpTable);
+	if (NO_ERROR == GetTcpTable(&TcpTable[0], &nSize, TRUE))
+	{
+		DWORD nCount = TcpTable[0].dwNumEntries;
+		if (nCount > 0)
+		{
+			for (DWORD i = 0; i < nCount; i++)
+			{
+				MIB_TCPROW TcpRow = TcpTable[0].table[i];
+				DWORD temp1 = TcpRow.dwLocalPort;
+				int temp2 = temp1 / 256 + (temp1 % 256) * 256;
+				if (temp2 == nPort)
+				{
+					return TRUE;
+				}
+			}
+		}
+		return FALSE;
+	}
+	return FALSE;
+}
 
 void lunch()
 {
@@ -140,14 +167,20 @@ int configCQ()
 	std::cout << "配置 go-cqhttp\n";
 	string QQ;
 	string password;
+	string QSign;
 	cout << "QQ:\n";
 	cin >> QQ;
 	cout << "password:\n";
 	cin >> password;
+	cout << "使用的QSign\n(输入0使用默认):\n";
+	cin>>QSign;
+	cout << QSign;
+	if (QSign == "0") { QSign = "https://qsign.loli.vet/"; }
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	cout << "CQ已被自动配置完成";
 	config["account"]["uin"] = QQ;
 	config["account"]["password"] = password;
+	config["account"]["sign-server"] = QSign;
 
 	ofstream fout;
 	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
@@ -336,7 +369,7 @@ public:
 					<< ec.message() << std::endl;
 			}
 		}
-		cout << "CClosed" << endl;
+		cout << "Closed" << endl;
 		m_thread->join();
 	}
 
@@ -519,9 +552,17 @@ int main()
 		thread tl(startCq);
 		tl.detach();
 	}
-	cout << "请等待cq启动后输入任何以继续" << endl;
-	int a;
-	cin >> a;
+	if ((cq_ip.find("127.0.0.1") != cq_ip.npos) || (cq_ip.find("0.0.0.0") != cq_ip.npos))
+	{
+		string po = cq_ip.substr(cq_ip.find_last_of(":")+1, cq_ip.length());
+		ULONG poInt = strtoll(po.c_str(), NULL, 10);
+		while (GetTcpPortState(poInt) == FALSE)
+		{
+			Sleep(1000);
+		}
+		cout << "检测到CQ启动" << endl;
+	}
+	Sleep(1000);
 	int id = endpoint.connect(cq_ip);
 	if (id != -1) {
 		std::cout << "> Created connection with id " << id << std::endl;
@@ -531,13 +572,14 @@ int main()
 	while (!done)
 	{
 		string cmd;
-		cin >> cmd;
+		getline(cin, cmd);
 		if (cmd == "exit")
 		{
 			done = true;
 
 		}
 	}
+	system("taskkill /F /IM go-cqhttp.exe /T");
 	return 0;
 }
 

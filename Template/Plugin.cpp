@@ -11,6 +11,7 @@
 #pragma comment(lib, "crypt32.lib")
 #pragma comment(lib, "libcrypto-3-x64.lib")
 
+
 #include <openssl/ssl3.h>
 #include "httplib.h"
 #include <llapi/ServerAPI.h>
@@ -50,6 +51,7 @@
 #include <map>
 #include <string>
 #include <sstream>
+
 
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
@@ -986,7 +988,7 @@ void msgAPI::privateMsg(string QQnum, string msg)
 }
 void groupMsgSend(string group_id, string msg)
 {
-	msg = "{\"action\": \"send_group_msg\",\"params\": {\"group_id\": \"" + group_id + "\",\"message\": \"" + msg + "\",\"auto_escape\": \"false\",\"access_token=\": \""+accessToken+"\" }}";
+	msg = "{\"action\": \"send_group_msg\",\"params\": {\"group_id\": \"" + group_id + "\",\"message\": \"" + msg + "\",\"auto_escape\": \"false\"}}";
 	endpoint.send(0, msg);
 }
 void msgAPI::groupMsg(string group_id, string msg)
