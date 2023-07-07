@@ -174,7 +174,6 @@ int configCQ()
 	cin >> password;
 	cout << "使用的QSign\n(输入0使用默认):\n";
 	cin>>QSign;
-	cout << QSign;
 	if (QSign == "0") { QSign = "https://qsign.loli.vet/"; }
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	cout << "CQ已被自动配置完成";
@@ -571,13 +570,6 @@ int main()
 	bool done = false;
 	while (!done)
 	{
-		string cmd;
-		getline(cin, cmd);
-		if (cmd == "exit")
-		{
-			done = true;
-
-		}
 	}
 	system("taskkill /F /IM go-cqhttp.exe /T");
 	return 0;

@@ -53,6 +53,7 @@
 #include <sstream>
 
 
+
 typedef websocketpp::client<websocketpp::config::asio_client> client;
 
 
@@ -477,7 +478,6 @@ public:
 			{
 				////////////////////////删除旧文件
 				json FileList = jm;
-				cout << jm.dump() << endl;
 				for (json::iterator it = FileList["data"]["files"].begin(); it != FileList["data"]["files"].end(); ++it) {
 					json secList = it.value();
 					if (secList["file_name"] == "摸鱼人员名单.txt")
@@ -614,11 +614,14 @@ public:
 
 				if (message.find("绑定") == 0 && message.length() > 6)
 				{
+
 					msgAPI sendMsg;
 					if (message.find("[CQ:") == message.npos && message.find("[mirai:") == message.npos)
 					{
 						if (message.substr(6, 1) == " " && message.length() > 7) { message = message.substr(7, message.length()); }
 						else if (message.substr(6, 1) != " ") { message = message.substr(6, message.length()); }
+						regex r("[\u4E00-\u9FA5]+");
+						if (regex_match(message, r))goto outBind;;
 						try {
 							json BlackBe = BlackBEGet(userid, message);
 							if (!BlackBe["data"]["exist"])
