@@ -75,6 +75,7 @@ string cq_ip;
 int get_list_status = 0;//查未绑定名单步骤
 string file_id;
 int busid;
+json BlackJson;
 
 using namespace std;
 
@@ -149,7 +150,6 @@ inline void msgCut(string message,string username)
 	else if (message.find("[CQ:reply") != message.npos)
 	{
 		string cqat = message.substr(message.find("[CQ:reply"), message.length());
-		cout << cqat << endl;
 		int CQlocate = (int)message.find("[CQ:reply");
 		cqat = cqat.substr(0, cqat.find_first_of("] "));
 		int CQlen = (int)cqat.length();
@@ -346,23 +346,16 @@ inline void BlackBeCheck(string message)
 		}
 		else if (BlackBeJson["data"]["exist"])
 		{
-			cout << 1 << endl;
 			for (json::iterator it = BlackBeJson["data"]["info"].begin(); it != BlackBeJson["data"]["info"].end(); ++it) {
 				string body = it.value().dump();
 				json secList = json::parse(body.begin(), body.end());
 				string name = secList["name"];
-				cout << 3 << endl;
 				string info = secList["info"];
-				cout << 3 << endl;
 				string url = secList["uuid"];
 				url = "https://blackbe.work/detail/" + url;
-				cout << 3 << endl;
 				string qq = to_string(secList["qq"]);
-				cout << 1 << endl;
 				string level = to_string(secList["level"]);
-				cout << 2 << endl;
 				string msg = "玩家 " + name + " (QQ：" + qq + ")被列于云黑公开库\n危险等级: " + level + "\n封禁原因：" + info + "\n详细信息: " + url;
-				cout << 3 << endl;
 				sendMsg.groupMsg(GROUPID, msg);
 			}
 		}
@@ -376,10 +369,36 @@ inline void BlackBeCheck(string message)
 
 inline void ConsoleEvent(string BlackMsg) {
 	msgAPI msgSend;
-	if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
+	string aa = "";
+	aa = BlackJson["1"];
+	if (aa != "")
 	{
-		string outPut = serverName + ": " + cmdMsg;
-		msgSend.groupMsg(GROUPID, outPut);
+		int i = 1;
+		bool res = false;
+		while (BlackJson[to_string(i)].empty()==FALSE)
+		{
+			string Black;
+			Black = BlackJson[to_string(i)];
+			if (Black.find("*")==Black.npos && cmdMsg==Black)
+			{
+				res = true;
+			}
+			else if (Black.find("*") != Black.npos)
+			{
+				string Black1 = Black.substr(0, Black.find_first_of("*"));
+				string Black2 = Black.substr(Black.find_first_of("*")+1, Black.length());
+				if (cmdMsg.find(Black1) == 0 && cmdMsg.find(Black2) == cmdMsg.length() - Black2.length())
+				{
+					res = true;
+				}
+			}
+			i = i + 1;
+		}
+		if (res == false)
+		{
+			string outPut = serverName + ": " + cmdMsg;
+			msgSend.groupMsg(GROUPID, outPut);
+		}
 	}
 }//防止命令监听导致掉TPS而建立的新线程
 
@@ -1084,11 +1103,14 @@ void PluginInit()
 	//消息转发黑名单读取
 	string BlackMsg;
 	fstream BlackCmd;
-	BlackCmd.open(".\\plugins\\X-Robot\\BlackMsg.txt");
+	BlackCmd.open(".\\plugins\\X-Robot\\BlackMsg.txt"); 
+	int MsgNum = 0;
 	while (!BlackCmd.eof())
 	{
-		char a[256];
-		BlackCmd.getline(a, 256);
+		MsgNum = MsgNum + 1;
+		char a[512];
+		BlackCmd.getline(a, 512);
+		BlackJson[to_string(MsgNum)] = a;
 		BlackMsg = BlackMsg + "\n" + a;
 	}
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
