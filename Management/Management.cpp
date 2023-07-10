@@ -43,7 +43,6 @@ int interval = 0;
 json op;
 bool start_mode;
 string accessToken;
-string SaveName;
 string backupList[5];
 string cq_ip;
 
@@ -97,7 +96,7 @@ string UTF8_2_GBK(string utf8Str)
 
 BOOL GetTcpPortState(ULONG nPort)
 {
-	MIB_TCPTABLE TcpTable[1024];
+	MIB_TCPTABLE TcpTable[512];
 	DWORD nSize = sizeof(TcpTable);
 	if (NO_ERROR == GetTcpTable(&TcpTable[0], &nSize, TRUE))
 	{
@@ -504,24 +503,6 @@ int main()
 	backupTime = info["manager"]["backup_interval"];
 	infoFile.close();
 
-	fstream SvrPro;
-	SvrPro.open(".\\server.properties");
-	while(!SvrPro.eof())
-	{
-		char a[256];
-		SvrPro.getline(a, 256);
-		SaveName = a;
-		if (SaveName.find("level-name=")!=SaveName.npos)
-		{
-			SaveName = SaveName.substr(11, SaveName.length());
-			cout << SaveName << endl;
-			break;
-		}
-
-	}
-	//SaveName = SaveName.substr(SaveName.find_first_of("level-name="), SaveName.find_first_of("# Allowed values: Any string without semicolon symbol or symbols illegal for file name"));
-
-
 
 	fstream OPFile;
 	OPFile.open(".\\plugins\\X-Robot\\op.json");
@@ -567,11 +548,10 @@ int main()
 		std::cout << "> Created connection with id " << id << std::endl;
 	}
 
-	bool done = false;
-	while (!done)
+	while (true)
 	{
+		Sleep(100);
 	}
-	system("taskkill /F /IM go-cqhttp.exe /T");
 	return 0;
 }
 

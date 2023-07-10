@@ -25,6 +25,12 @@
 #include <llapi/mc/Actor.hpp>
 #include <llapi/mc/Player.hpp>
 #include <llapi/mc/ItemStack.hpp>
+#include <string>
+#include <llapi/mc/CommandOrigin.hpp>
+#include <llapi/mc/CommandOutput.hpp>
+#include <llapi/mc/Types.hpp>
+#include <llapi/DynamicCommandAPI.h>
+#include <llapi/GlobalServiceAPI.h>
 #include <llapi/LLAPI.h>
 #include <Nlohmann/json.hpp>
 #include <fstream>
@@ -33,6 +39,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
+#pragma comment(lib, "Iphlpapi.lib")
 #include <stdio.h>
 #include <algorithm>
 #include <sysinfoapi.h>
@@ -1045,6 +1052,55 @@ void groupList(string group_id,int status)
 
 extern Logger loggerPlu;
 
+BOOL GetTcpPortState(ULONG nPort)
+{
+	MIB_TCPTABLE TcpTable[1024];
+	DWORD nSize = sizeof(TcpTable);
+	if (NO_ERROR == GetTcpTable(&TcpTable[0], &nSize, TRUE))
+	{
+		DWORD nCount = TcpTable[0].dwNumEntries;
+		if (nCount > 0)
+		{
+			for (DWORD i = 0; i < nCount; i++)
+			{
+				MIB_TCPROW TcpRow = TcpTable[0].table[i];
+				DWORD temp1 = TcpRow.dwLocalPort;
+				int temp2 = temp1 / 256 + (temp1 % 256) * 256;
+				if (temp2 == nPort)
+				{
+					return TRUE;
+				}
+			}
+		}
+		return FALSE;
+	}
+	return FALSE;
+}
+
+int connectCq()
+{
+	if ((cq_ip.find("127.0.0.1") != cq_ip.npos) || (cq_ip.find("0.0.0.0") != cq_ip.npos))
+	{
+		string po = cq_ip.substr(cq_ip.find_last_of(":") + 1, cq_ip.length());
+		ULONG poInt = strtoll(po.c_str(), NULL, 10);
+		if (GetTcpPortState(poInt) == TRUE)
+		{
+			XLog.info("检测到CQ启动");
+				Sleep(1000);
+			int id = endpoint.connect(cq_ip);
+			return id;
+		}
+		else return 0;
+
+	}
+
+}
+
+void startcmd()
+{
+	system("Manager.exe");
+}
+
 void PluginInit()
 {
 
@@ -1115,11 +1171,52 @@ void PluginInit()
 	}
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
-	int id = endpoint.connect(cq_ip);
+	int id = connectCq();
 	if (id != -1) {
 		std::cout << "> Created connection with id " << id << std::endl;
 	}
 
+
+	DynamicCommand::setup(
+		/* name = */ "startcq",
+		/* description = */ "Start go-cqhttp with LiteLoader",
+		/* enums = */{},
+		/* params = */{},
+		/* overloads = */{
+		  {},
+		},
+		/* callback = */ [](
+			DynamicCommand const& command,
+			CommandOrigin const& origin,
+			CommandOutput& output,
+			std::unordered_map<std::string, DynamicCommand::Result>& results
+			) {
+				output.success("正在启动");
+				thread startm(startcmd);
+				startm.detach();
+		},
+		CommandPermissionLevel::Console
+	);
+
+	DynamicCommand::setup(
+		/* name = */ "connectcq",
+		/* description = */ "Connect to go-cqhttp again",
+		/* enums = */{},
+		/* params = */{},
+		/* overloads = */{
+		  {},
+		},
+		/* callback = */ [](
+			DynamicCommand const& command,
+			CommandOrigin const& origin,
+			CommandOutput& output,
+			std::unordered_map<std::string, DynamicCommand::Result>& results
+			) {
+				output.success("正在连接");
+				connectCq();
+		},
+		CommandPermissionLevel::Console
+	);
 
 	Event::ServerStartedEvent::subscribe([](const Event::ServerStartedEvent& ev)
 		{
