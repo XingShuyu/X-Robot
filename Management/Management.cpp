@@ -172,11 +172,12 @@ int configCQ()
 	cin >> QQ;
 	cout << "password:\n";
 	cin >> password;
-	cout << "使用的QSign\n(乱输入禁用QSign服务器)\n(推荐输入0使用本地QSign服务器):\n";
+	cout << "使用的QSign\n(输入-禁用QSign服务器)\n(推荐输入0使用本地QSign服务器):\n";
 	cin>>QSign;
-	cout << "access-token:\n(强烈建议配置在公网的服务器设置access-token,如果使用本地go-cqhttp,会自动同步access-token)";
+	cout << "access-token:\n(强烈建议配置在公网的服务器设置access-token,如果使用本地go-cqhttp,会自动同步access-token)\n";
 	cin >> accessToken;
 	if (QSign == "0") { QSign = "http://127.0.0.1:9000"; }
+	if (QSign == "-") { system("powershell rm .\\plugins\\X-Robot\\qsign\\ -Recurse"); }
 	info["manager"]["qsign"] = QSign;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	cout << "CQ已被自动配置完成";
@@ -199,7 +200,7 @@ int startCq()
 
 int startqsign()
 {
-	system("plugins\\X-Robot\\qsign\\bin\\unidbg-fetch-qsign.bat --basePath=plugins\\X-Robot\\qsign\\txlib\\8.9.63");
+	system("start plugins\\X-Robot\\qsign\\bin\\unidbg-fetch-qsign.bat --basePath=plugins\\X-Robot\\qsign\\txlib\\8.9.63");
 	return 0;
 }
 
