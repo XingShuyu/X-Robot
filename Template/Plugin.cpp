@@ -952,6 +952,7 @@ public:
 			websocketpp::lib::placeholders::_2
 		));
 
+		con->append_header("Authorization", " " + accessToken);
 		m_endpoint.connect(con);
 
 		return new_id;
@@ -1054,7 +1055,7 @@ extern Logger loggerPlu;
 
 BOOL GetTcpPortState(ULONG nPort)
 {
-	MIB_TCPTABLE TcpTable[1024];
+	MIB_TCPTABLE TcpTable[512];
 	DWORD nSize = sizeof(TcpTable);
 	if (NO_ERROR == GetTcpTable(&TcpTable[0], &nSize, TRUE))
 	{
@@ -1098,7 +1099,25 @@ int connectCq()
 
 void startcmd()
 {
-	system("Manager.exe");
+	STARTUPINFO startupInfo = { 0 };
+	PROCESS_INFORMATION  processInformation = { 0 };
+	BOOL bSuccess = CreateProcess(TEXT("Manager.exe"), NULL, NULL, NULL, FALSE, NULL, NULL, NULL, &startupInfo, &processInformation);
+
+	if (bSuccess)
+	{
+		cout << "Process started..." << endl
+			<< "ProcessID: "
+			<< processInformation.dwProcessId << endl;
+
+	}
+	else
+	{
+		cout << "Can not start process!" << endl
+			<< "Error code: " << GetLastError();
+
+	}
+	CloseHandle(processInformation.hProcess);
+	CloseHandle(processInformation.hThread);
 }
 
 void PluginInit()

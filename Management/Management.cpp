@@ -160,34 +160,46 @@ inline bool OpCheck(string userid, string role)
 }
 
 
+string QSign;
+json info;
 
 int configCQ()
 {
 	std::cout << "配置 go-cqhttp\n";
 	string QQ;
 	string password;
-	string QSign;
 	cout << "QQ:\n";
 	cin >> QQ;
 	cout << "password:\n";
 	cin >> password;
-	cout << "使用的QSign\n(输入0使用默认):\n";
+	cout << "使用的QSign\n(乱输入禁用QSign服务器)\n(推荐输入0使用本地QSign服务器):\n";
 	cin>>QSign;
-	if (QSign == "0") { QSign = "https://qsign.loli.vet/"; }
+	cout << "access-token:\n(强烈建议配置在公网的服务器设置access-token,如果使用本地go-cqhttp,会自动同步access-token)";
+	cin >> accessToken;
+	if (QSign == "0") { QSign = "http://127.0.0.1:9000"; }
+	info["manager"]["qsign"] = QSign;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	cout << "CQ已被自动配置完成";
 	config["account"]["uin"] = QQ;
 	config["account"]["password"] = password;
 	config["account"]["sign-server"] = QSign;
+	config["default-middlewares"]["access-token"] = accessToken;
 
 	ofstream fout;
 	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	fout << config;
+	fout.close();
 	return 0;
 }
 int startCq()
 {
 	system(".\\start_go-cqhttp.bat");
+	return 0;
+}
+
+int startqsign()
+{
+	system("plugins\\X-Robot\\qsign\\bin\\unidbg-fetch-qsign.bat --basePath=plugins\\X-Robot\\qsign\\txlib\\8.9.63");
 	return 0;
 }
 
@@ -410,6 +422,7 @@ public:
 			websocketpp::lib::placeholders::_2
 		));
 
+		con->append_header("Authorization", " "+ accessToken);
 		m_endpoint.connect(con);
 
 		return new_id;
@@ -488,7 +501,7 @@ void msgAPI::groupMsg(string group_id, string msg)
 int main()
 {
 	system("chcp 936");
-	json info;
+
 	fstream infoFile;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
 	interval = config["heartbeat"]["interval"].as<int>();
@@ -501,6 +514,12 @@ int main()
 	bool aleadyConfig = info["manager"]["cqhttp_config"];
 	accessToken = info["accessToken"];
 	backupTime = info["manager"]["backup_interval"];
+	QSign = info["manager"]["qsign"];
+	config["account"]["sign-server"] = QSign;
+	ofstream fout;
+	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+	fout << config;
+	fout.close();
 	infoFile.close();
 
 
@@ -529,20 +548,34 @@ int main()
 			infoFileOut << GBK_2_UTF8(JsonInfo);
 			infoFileOut.close();
 		}
+		if ((QSign.find("127.0.0.1") != QSign.npos) || (QSign.find("0.0.0.0") != QSign.npos))
+		{
+			thread tl(startqsign);
+			tl.detach();
+
+			string po = QSign.substr(QSign.find_last_of(":") + 1, QSign.length());
+			ULONG poInt = strtoll(po.c_str(), NULL, 10);
+			while (GetTcpPortState(poInt) == FALSE)
+			{
+				Sleep(1000);
+			}
+			cout << "检测到QSign启动，正在启动go-cqhttp" << endl;
+		}
+		Sleep(3000);
 		thread tl(startCq);
 		tl.detach();
-	}
-	if ((cq_ip.find("127.0.0.1") != cq_ip.npos) || (cq_ip.find("0.0.0.0") != cq_ip.npos))
-	{
-		string po = cq_ip.substr(cq_ip.find_last_of(":")+1, cq_ip.length());
-		ULONG poInt = strtoll(po.c_str(), NULL, 10);
-		while (GetTcpPortState(poInt) == FALSE)
+		if ((cq_ip.find("127.0.0.1") != cq_ip.npos) || (cq_ip.find("0.0.0.0") != cq_ip.npos))
 		{
-			Sleep(1000);
+			string po = cq_ip.substr(cq_ip.find_last_of(":") + 1, cq_ip.length());
+			ULONG poInt = strtoll(po.c_str(), NULL, 10);
+			while (GetTcpPortState(poInt) == FALSE)
+			{
+				Sleep(1000);
+			}
+			cout << "检测到go-cqhttp启动,启动逻辑单元" << endl;
 		}
-		cout << "检测到CQ启动" << endl;
+		Sleep(1000);
 	}
-	Sleep(1000);
 	int id = endpoint.connect(cq_ip);
 	if (id != -1) {
 		std::cout << "> Created connection with id " << id << std::endl;

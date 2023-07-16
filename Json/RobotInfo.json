@@ -3,7 +3,7 @@
     "cqhttp_config": false,
     "backup_interval": 24,
     "multi_server": false,
-    "qSignServer": "https://qsign.loli.vet/",
+    "qsign": "https://qsign.loli.vet/",
     "start_mode": false
   },
   "cq_ip": "ws://127.0.0.1:9002",
