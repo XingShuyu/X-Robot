@@ -1,3 +1,7 @@
 [submodule "SDK"]
 	path = SDK
 	url = https://github.com/LiteLDev/LiteLoaderSDK
+
+[submodule "jre"]
+	path = qsign/jre
+	url = https://www.azul.com/downloads/?version=java-11-lts&os=windows&architecture=x86-64-bit&package=jre#zulu
