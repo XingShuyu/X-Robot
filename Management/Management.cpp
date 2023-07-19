@@ -1,4 +1,4 @@
-// Management.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
+// Management.cpp : 麓脣脦脛录镁掳眉潞卢 "main" 潞炉脢媒隆拢鲁脤脨貌脰麓脨脨陆芦脭脷麓脣麓娄驴陋脢录虏垄陆谩脢酶隆拢
 //
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -46,7 +46,7 @@ string accessToken;
 string backupList[5];
 string cq_ip;
 
-//go-cqhttp的API封装
+//go-cqhttp碌脛API路芒脳掳
 class msgAPI
 {
 public:
@@ -165,25 +165,26 @@ json info;
 
 int configCQ()
 {
-	std::cout << "配置 go-cqhttp\n";
+	std::cout << "脜盲脰脙 go-cqhttp\n";
 	string QQ;
 	string password;
 	cout << "QQ:\n";
 	cin >> QQ;
 	cout << "password:\n";
 	cin >> password;
-	cout << "使用的QSign\n(输入-禁用QSign服务器)\n(推荐输入0使用本地QSign服务器):\n";
+	cout << "脢鹿脫脙碌脛QSign\n(脢盲脠毛-陆没脫脙QSign路镁脦帽脝梅)\n(脥脝录枚脢盲脠毛0脢鹿脫脙卤戮碌脴QSign路镁脦帽脝梅):\n";
 	cin>>QSign;
-	cout << "access-token:\n(强烈建议配置在公网的服务器设置access-token,如果使用本地go-cqhttp,会自动同步access-token)\n";
+	cout << "access-token:\n(脟驴脕脪陆篓脪茅脜盲脰脙脭脷鹿芦脥酶碌脛路镁脦帽脝梅脡猫脰脙access-token,脠莽鹿没脢鹿脫脙卤戮碌脴go-cqhttp,禄谩脳脭露炉脥卢虏陆access-token)\n";
 	cin >> accessToken;
 	if (QSign == "0") { QSign = "http://127.0.0.1:9000"; }
 	if (QSign == "-") { system("powershell rm .\\plugins\\X-Robot\\qsign\\ -Recurse"); }
 	info["manager"]["qsign"] = QSign;
 	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
-	cout << "CQ已被自动配置完成";
+	cout << "CQ脪脩卤禄脳脭露炉脜盲脰脙脥锚鲁脡";
 	config["account"]["uin"] = QQ;
 	config["account"]["password"] = password;
 	config["account"]["sign-server"] = QSign;
+	info["accessToken"] = QSign;
 	config["default-middlewares"]["access-token"] = accessToken;
 
 	ofstream fout;
@@ -272,11 +273,11 @@ public:
 			string notice_type;
 			string post_type;
 			string message;
-			try { message = jm["message"]; }//message为消息内容，为string
+			try { message = jm["message"]; }//message脦陋脧没脧垄脛脷脠脻拢卢脦陋string
 			catch (...) {}
-			try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
+			try { role = jm["sender"]["role"]; }//role脦陋路垄脣脥脮脽碌脛脠潞脕脛脡铆路脻拢卢驴脡脩隆脰碌拢潞"owner"脠潞脰梅   "admin"鹿脺脌铆脭卤   "member"鲁脡脭卤,卤盲脕驴脌脿脨脥脦陋string
 			catch (...) {}
-			try { userid = to_string(jm["user_id"]); }//userid为发送者QQ号，为string
+			try { userid = to_string(jm["user_id"]); }//userid脦陋路垄脣脥脮脽QQ潞脜拢卢脦陋string
 			catch (...) {}
 			try
 			{
@@ -285,20 +286,20 @@ public:
 				{
 					username = jm["sender"]["nickname"];
 				}
-			}//username，为发送者的的群昵称（优先）或者用户名，为string
+			}//username拢卢脦陋路垄脣脥脮脽碌脛碌脛脠潞锚脟鲁脝拢篓脫脜脧脠拢漏禄貌脮脽脫脙禄搂脙没拢卢脦陋string
 			catch (...) {}
-			try { groupid = jm["group_id"]; }//groupid为消息来源的QQ群，为int
+			try { groupid = jm["group_id"]; }//groupid脦陋脧没脧垄脌麓脭麓碌脛QQ脠潞拢卢脦陋int
 			catch (...) {}
 			try { notice_type = jm["notice_type"]; }
 			catch (...) { notice_type = ""; }
 			try { post_type = jm["post_type"]; }
 			catch (...) { post_type = ""; }
-			//消息处理
+			//脧没脧垄麓娄脌铆
 			if (groupid == GROUPIDINT)
 			{
-				if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
+				if (message == GBK_2_UTF8("驴陋路镁") && OpCheck(userid, role) == true)
 				{
-					cout << "正在开服" << endl;
+					cout << "脮媒脭脷驴陋路镁" << endl;
 					thread lunchSrv(lunch);
 					lunchSrv.detach();
 				}
@@ -537,9 +538,9 @@ int main()
 			configCQ();
 			infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
 			info["manager"]["cqhttp_config"] = true;
-			cout << "配置机器人基础信息:" << endl << "你的服务器群QQ号:" << endl;
+			cout << "脜盲脰脙禄煤脝梅脠脣禄霉麓隆脨脜脧垄:" << endl << "脛茫碌脛路镁脦帽脝梅脠潞QQ潞脜:" << endl;
 			cin >> GROUPIDINT;
-			cout << "请输入你的服务器名称" << endl;
+			cout << "脟毛脢盲脠毛脛茫碌脛路镁脦帽脝梅脙没鲁脝" << endl;
 			cin >> serverName;
 
 			info["QQ_group_id"] = GROUPIDINT;
@@ -560,7 +561,7 @@ int main()
 			{
 				Sleep(1000);
 			}
-			cout << "检测到QSign启动，正在启动go-cqhttp" << endl;
+			cout << "录矛虏芒碌陆QSign脝么露炉拢卢脮媒脭脷脝么露炉go-cqhttp" << endl;
 		}
 		Sleep(3000);
 		thread tl(startCq);
@@ -573,7 +574,7 @@ int main()
 			{
 				Sleep(1000);
 			}
-			cout << "检测到go-cqhttp启动,启动逻辑单元" << endl;
+			cout << "录矛虏芒碌陆go-cqhttp脝么露炉,脝么露炉脗脽录颅碌楼脭陋" << endl;
 		}
 		Sleep(1000);
 	}
@@ -589,13 +590,13 @@ int main()
 	return 0;
 }
 
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
+// 脭脣脨脨鲁脤脨貌: Ctrl + F5 禄貌碌梅脢脭 >隆掳驴陋脢录脰麓脨脨(虏禄碌梅脢脭)隆卤虏脣碌楼
+// 碌梅脢脭鲁脤脨貌: F5 禄貌碌梅脢脭 >隆掳驴陋脢录碌梅脢脭隆卤虏脣碌楼
 
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
+// 脠毛脙脜脢鹿脫脙录录脟脡: 
+//   1. 脢鹿脫脙陆芒戮枚路陆掳赂脳脢脭麓鹿脺脌铆脝梅麓掳驴脷脤铆录脫/鹿脺脌铆脦脛录镁
+//   2. 脢鹿脫脙脥脜露脫脳脢脭麓鹿脺脌铆脝梅麓掳驴脷脕卢陆脫碌陆脭麓麓煤脗毛鹿脺脌铆
+//   3. 脢鹿脫脙脢盲鲁枚麓掳驴脷虏茅驴麓脡煤鲁脡脢盲鲁枚潞脥脝盲脣没脧没脧垄
+//   4. 脢鹿脫脙麓铆脦贸脕脨卤铆麓掳驴脷虏茅驴麓麓铆脦贸
+//   5. 脳陋碌陆隆掳脧卯脛驴隆卤>隆掳脤铆录脫脨脗脧卯隆卤脪脭麓麓陆篓脨脗碌脛麓煤脗毛脦脛录镁拢卢禄貌脳陋碌陆隆掳脧卯脛驴隆卤>隆掳脤铆录脫脧脰脫脨脧卯隆卤脪脭陆芦脧脰脫脨麓煤脗毛脦脛录镁脤铆录脫碌陆脧卯脛驴
+//   6. 陆芦脌麓拢卢脠么脪陋脭脵麓脦麓貌驴陋麓脣脧卯脛驴拢卢脟毛脳陋碌陆隆掳脦脛录镁隆卤>隆掳麓貌驴陋隆卤>隆掳脧卯脛驴隆卤虏垄脩隆脭帽 .sln 脦脛录镁
