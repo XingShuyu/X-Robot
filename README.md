@@ -181,3 +181,7 @@ op权限就是谁能执行上文的sudo指令
 * 感谢go-cqhttp,cpp-httplib,json三个项目的支持
 * 感谢LL中大佬的指教
 * 感谢Tenderbear服务器全体成员的测试
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=XingShuyu/X-Robot&type=Date)](https://star-history.com/#XingShuyu/X-Robot&Date)
