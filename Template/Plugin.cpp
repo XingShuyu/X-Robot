@@ -1280,8 +1280,11 @@ void PluginInit()
 			{//
 				msgAPI msgSend;
 				Player* Player = ev.mPlayer;//获取触发监听的玩家
-				string msg = ev.mPlayer->getRealName() + "离开了游戏";
-				msgSend.groupMsg(GROUPID, msg);
+				if (!ev.mPlayer->isSimulatedPlayer())
+				{
+					string msg = ev.mPlayer->getRealName() + "离开了游戏";
+					msgSend.groupMsg(GROUPID, msg);
+				}
 				return true;
 			});
 	
@@ -1290,8 +1293,11 @@ void PluginInit()
 			{//
 				msgAPI msgSend;
 				Player* Player = ev.mPlayer;//获取触发监听的玩家
-				string msg = ev.mPlayer->getRealName() + "加入了游戏";
-				msgSend.groupMsg(GROUPID, msg);
+				if (!ev.mPlayer->isSimulatedPlayer())
+				{
+					string msg = ev.mPlayer->getRealName() + "加入了游戏";
+					msgSend.groupMsg(GROUPID, msg);
+				}
 				return true;
 			});
 	}

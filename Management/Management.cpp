@@ -185,6 +185,7 @@ int configCQ()
 	config["account"]["password"] = password;
 	config["account"]["sign-server"] = QSign;
 	config["default-middlewares"]["access-token"] = accessToken;
+	info["accessToken"] = accessToken;
 
 	ofstream fout;
 	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
