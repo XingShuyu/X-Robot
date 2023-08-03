@@ -266,6 +266,7 @@ inline bool OpCheck(string userid,string role)
 	{
 		return true;
 	}
+	return false;
 }//检查是否有op权限
 
 inline bool timeChecker()
@@ -522,7 +523,6 @@ public:
 			if (get_list_status == 1 && notice_type == "" && post_type == "")
 			{
 				get_list_status = 2;
-				msgAPI sendMsg;
 				json nameList = jm;
 				string Num = "摸鱼人员名单:\n";
 				for (json::iterator it = nameList["data"].begin(); it != nameList["data"].end(); ++it) {
@@ -604,7 +604,7 @@ public:
 				else if (message == "菜单" && (timeChecker() == true || OpCheck(userid, role) == true))
 				{
 					msgAPI sendMsg;
-					string msg = "\# X-Robot\n一个为BDS定制的LL机器人\n> 功能列表\n1. MC聊天->QQ的转发\n2. list查在线玩家\n3. QQ中%发送消息到mc\n4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"\n5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询\n6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+					string msg = "\\# X-Robot\n一个为BDS定制的LL机器人\n> 功能列表\n1. MC聊天->QQ的转发\n2. list查在线玩家\n3. QQ中%发送消息到mc\n4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"\n5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询\n6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
 					sendMsg.groupMsg(GROUPID, msg);
 				}
 				else if (timeChecker() == false && (message == "菜单" || message == "查服" || message == "list"))
@@ -612,7 +612,7 @@ public:
 					//msgAPI sendMsg;
 					//sendMsg.groupMsg(GROUPID, "太着急了，待会再试叭");
 				}
-				if (message.find("%") == 0 && message.length() >= 3 && with_chat == true && QQforward == true)
+				if (message.find("%") == 0 && message.length() >= 2 && with_chat == true && QQforward == true)
 				{
 					message = message.substr(1, message.length());
 					thread msgCutTh(msgCut, message, username);//多线程处理
@@ -1094,7 +1094,7 @@ int connectCq()
 		else return 0;
 
 	}
-
+	return 0;
 }
 
 void startcmd()
@@ -1252,8 +1252,17 @@ void PluginInit()
 				msgAPI msgSend;
 		Player* Player = ev.mPlayer;//获取触发监听的玩家
 		string mMessage = ev.mMessage;
-		string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
-		msgSend.groupMsg(GROUPID, msg);
+		if (mMessage.find("%") == 0 && mMessage.length() >= 2 && with_chat == true)
+		{
+			mMessage = mMessage.substr(1, mMessage.length());
+			string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
+			msgSend.groupMsg(GROUPID, msg);
+		}
+		else if (with_chat == false)
+		{
+			string msg = serverName + ":<" + ev.mPlayer->getRealName() + ">" + mMessage;
+			msgSend.groupMsg(GROUPID, msg);
+		}
 		return true;
 			});
 	}

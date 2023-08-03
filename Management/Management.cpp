@@ -157,6 +157,7 @@ inline bool OpCheck(string userid, string role)
 			return false;
 		}
 	}
+	return false;
 }
 
 
