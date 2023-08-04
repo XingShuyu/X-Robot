@@ -70,11 +70,7 @@ goto end
 
 :process
 cd /d $(SolutionDir)\SDK\Tools\
-if exist $(LocalDebuggerWorkingDirectory)\bedrock_server.pdb (
-LibraryBuilder.exe -o ..\Lib\ $(LocalDebuggerWorkingDirectory)
-) else (
-LibraryBuilder.exe -o ..\Lib\
-)
+PeEditor.exe -c -l -o ../lib
 
 :end
 			</Command>
