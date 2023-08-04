@@ -14,7 +14,6 @@ copy .\x64\Release\X-Robot.dll .\ReleasePack\plugins\
 copy .\x64\Release\*.pdb .\ReleasePack\plugins\
 copy .\Management\*.bat .\ReleasePack\
 copy .\Management\yaml-cpp\Lib\yaml-cpp.dll .\ReleasePack\
-copy .\Management\BDS-Deamon\BDS-Deamon.cmd .\ReleasePack\
 copy .\Json\* .\ReleasePack\plugins\X-Robot\
 copy .\go-cqhttp\* .\ReleasePack\plugins\X-Robot\go-cqhttp\
 xcopy .\qsign\* .\ReleasePack\plugins\X-Robot\qsign\ /s

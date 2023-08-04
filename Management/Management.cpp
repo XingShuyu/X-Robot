@@ -124,11 +124,11 @@ void lunch()
 	Sleep(5000);
 	if (start_mode)
 	{
-		system("start .\\BDS-Deamon.cmd");
+		system("start .\\bedrock_server_mod.exe");
 	}
 	else
 	{
-		system(".\\BDS-Deamon.cmd");
+		system(".\\bedrock_server_mod.exe");
 	}
 }
 
