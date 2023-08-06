@@ -1094,6 +1094,11 @@ int connectCq()
 		else return 0;
 
 	}
+	else
+	{
+		int id = endpoint.connect(cq_ip);
+		return id;
+	}
 	return 0;
 }
 
@@ -1243,6 +1248,14 @@ void PluginInit()
 			msgSend.groupMsg(GROUPID, "服务器已启动");
 			Start = unsigned(GetTickCount64());
 			timeStart = unsigned(GetTickCount64());
+			return 0;
+		});
+	Event::PlayerDieEvent::subscribe([](const Event::PlayerDieEvent& ev)
+		{
+			Actor* a = ev.mPlayer;
+			string msg;
+			ev.mDamageSource->getDamagingEntityType();
+			cout <<a->getNameTag()<< msg << endl;
 			return 0;
 		});
 	if(MCforward)
