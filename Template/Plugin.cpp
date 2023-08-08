@@ -1227,7 +1227,6 @@ void PluginInit()
 		BlackCmd.getline(a, 512);
 		BlackJson[to_string(MsgNum)] = a;
 	}
-	cout << BlackJson.dump(4) << endl;
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	int id = connectCq();
@@ -1289,7 +1288,6 @@ void PluginInit()
 		{
 			Actor* a = ev.mPlayer;
 			string msg;
-			cout << ev.mPlayer->getName() << endl;
 			return 0;
 		});
 	if(MCforward)
@@ -1319,7 +1317,7 @@ void PluginInit()
 			{
 
 				cmdMsg = ev.mOutput;
-				cout << "cmdMsg" << endl;
+
 		thread SendCommand(ConsoleEvent);
 		SendCommand.detach();
 				/*if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
