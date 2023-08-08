@@ -375,7 +375,7 @@ inline void BlackBeCheck(string message)
 }
 
 
-inline void ConsoleEvent(string BlackMsg) {
+inline void ConsoleEvent() {
 	msgAPI msgSend;
 	string aa = "";
 	aa = BlackJson["1"];
@@ -393,8 +393,8 @@ inline void ConsoleEvent(string BlackMsg) {
 			}
 			else if (Black.find("*") != Black.npos)
 			{
-				string Black1 = Black.substr(0, Black.find_first_of("*"));
-				string Black2 = Black.substr(Black.find_first_of("*")+1, Black.length());
+				string Black1 = Black.substr(0, Black.find("*"));
+				string Black2 = Black.substr(Black.find("*")+1, Black.length());
 				if (cmdMsg.find(Black1) == 0 && cmdMsg.find(Black2) == cmdMsg.length() - Black2.length())
 				{
 					res = true;
@@ -407,6 +407,11 @@ inline void ConsoleEvent(string BlackMsg) {
 			string outPut = serverName + ": " + cmdMsg;
 			msgSend.groupMsg(GROUPID, outPut);
 		}
+	}
+	else
+	{
+		string outPut = serverName + ": " + cmdMsg;
+		msgSend.groupMsg(GROUPID, outPut);
 	}
 }//防止命令监听导致掉TPS而建立的新线程
 
@@ -611,6 +616,37 @@ public:
 				{
 					//msgAPI sendMsg;
 					//sendMsg.groupMsg(GROUPID, "太着急了，待会再试叭");
+				}
+				if (message.find("地图画") == 0 && OpCheck(userid, role) == true && message.substr(9, 1) == "[" && message.find("[CQ:") != message.npos)
+				{
+					string url = message.substr(message.find("https://"), message.find_last_of("]"));
+					string XboxName;
+					if (BindID[userid].empty())
+					{
+						goto out;
+					}
+					else
+					{
+						XboxName = BindID[userid];
+					}
+					url = "execute as " + XboxName + " at " + XboxName + " run map download " + url;
+					Level::runcmd(url);
+				out:;
+				}
+				else if (message.find("地图画") == 0 && OpCheck(userid, role) == true && message.substr(9, 1) != "[" && message.find("[CQ:")!=message.npos)
+				{
+					string url = message.substr(message.find("https://"), message.find_last_of("]"));
+					string XboxName;
+					if (message.substr(9, 1) == " ")
+					{
+						XboxName = message.substr(10, message.find("[CQ:")-10);
+					}
+					else if (message.substr(9, 1) != " ")
+					{
+						XboxName = message.substr(9, message.find("[CQ:")-9);
+					}
+					url = "execute as " + XboxName + " at " + XboxName + " run map download " + url;
+					Level::runcmd(url);
 				}
 				if (message.find("%") == 0 && message.length() >= 2 && with_chat == true && QQforward == true)
 				{
@@ -1181,7 +1217,6 @@ void PluginInit()
 	FileLog.consoleLevel = 0;
 
 	//消息转发黑名单读取
-	string BlackMsg;
 	fstream BlackCmd;
 	BlackCmd.open(".\\plugins\\X-Robot\\BlackMsg.txt"); 
 	int MsgNum = 0;
@@ -1191,8 +1226,8 @@ void PluginInit()
 		char a[512];
 		BlackCmd.getline(a, 512);
 		BlackJson[to_string(MsgNum)] = a;
-		BlackMsg = BlackMsg + "\n" + a;
 	}
+	cout << BlackJson.dump(4) << endl;
 	//ll::registerPlugin("Robot", "Introduction", LL::Version(1, 0, 2),"github.com/XingShuyu/X-Robot.git","GPL-3.0","github.com");//注册插件
 		//为不影响LiteLoader启动而创建新线程运行websocket
 	int id = connectCq();
@@ -1254,8 +1289,7 @@ void PluginInit()
 		{
 			Actor* a = ev.mPlayer;
 			string msg;
-			ev.mDamageSource->getDamagingEntityType();
-			cout <<a->getNameTag()<< msg << endl;
+			cout << ev.mPlayer->getName() << endl;
 			return 0;
 		});
 	if(MCforward)
@@ -1281,11 +1315,12 @@ void PluginInit()
 	}
 	if (CommandForward)
 	{
-		Event::ConsoleOutputEvent::subscribe([BlackMsg](const Event::ConsoleOutputEvent& ev)
+		Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
 			{
 
-				cmdMsg = ev.mOutput.substr(0,ev.mOutput.length()-1);
-		thread SendCommand(ConsoleEvent, BlackMsg);
+				cmdMsg = ev.mOutput;
+				cout << "cmdMsg" << endl;
+		thread SendCommand(ConsoleEvent);
 		SendCommand.detach();
 				/*if (BlackMsg.find(cmdMsg) == BlackMsg.npos)
 				{
