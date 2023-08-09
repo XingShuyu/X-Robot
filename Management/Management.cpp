@@ -47,6 +47,8 @@ string backupList[5];
 string cq_ip;
 
 //go-cqhttpµÄAPI·â×°
+
+/*
 class msgAPI
 {
 public:
@@ -54,6 +56,7 @@ public:
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
 };
+*/
 
 
 INT64 GROUPIDINT;
@@ -485,20 +488,22 @@ private:
 
 websocket_endpoint endpoint;
 
+/*
 void msgAPI::privateMsg(string QQnum, string msg)
 {
 
-}
+}*/
 void groupMsgSend(string group_id, string msg)
 {
 	msg = "{\"action\": \"send_group_msg\",\"params\": {\"group_id\": \"" + group_id + "\",\"message\": \"" + msg + "\",\"auto_escape\": \"false\",\"access_token=\": \"" + accessToken + "\" }}";
 	endpoint.send(0, msg);
 }
+/*
 void msgAPI::groupMsg(string group_id, string msg)
 {
 	thread groupMsgTh(groupMsgSend, group_id, msg);
 	groupMsgTh.detach();
-}
+}*/
 
 
 int main()

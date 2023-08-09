@@ -59,6 +59,7 @@
 #include <string>
 #include <sstream>
 
+#include <DLLShare/DLL.h>
 
 
 typedef websocketpp::client<websocketpp::config::asio_client> client;
@@ -83,6 +84,7 @@ int get_list_status = 0;//查未绑定名单步骤
 string file_id;
 int busid;
 json BlackJson;
+string jsonmsg; //收到的初始数据
 
 using namespace std;
 
@@ -110,13 +112,6 @@ void CheckProtocolVersion()
 
 
 //go-cqhttp的API封装
-class msgAPI
-{
-public:
-	void privateMsg(string QQnum, string msg);
-	void groupMsg(string group_id, string msg);
-	/// void sendBack(string msgType, string id, string groupId, string msg);
-};
 
 
 inline void msgCut(string message,string username)
@@ -456,7 +451,7 @@ public:
 
 	void on_message(websocketpp::connection_hdl, client::message_ptr msg) {
 		if (msg->get_opcode() == websocketpp::frame::opcode::text) {
-			string jsonmsg = msg->get_payload();
+			jsonmsg = msg->get_payload();
 			if (jsonmsg.find("\"meta_event_type\":\"heartbeat\"") == jsonmsg.npos)
 			{
 				struct _stat info;
