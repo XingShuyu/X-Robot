@@ -68,9 +68,9 @@ typedef websocketpp::client<websocketpp::config::asio_client> client;
 using namespace nlohmann;
 INT64 GROUPIDINT = 452675761;
 int messageTime = 60;
-string GROUPID = std::to_string(GROUPIDINT);//QQ群号
+string GROUPID;
+//GROUPID = std::to_string(GROUPIDINT);//QQ群号
 string serverName = "服务器";//服务器名称
-json BindID;//绑定
 json op;//op鉴定权限
 bool with_chat,join_escape,QQforward,MCforward,whitelistAdd,listCommand,SrvInfoCommand,CommandForward;//配置选择
 string cmdMsg;//控制台消息
@@ -84,7 +84,10 @@ int get_list_status = 0;//查未绑定名单步骤
 string file_id;
 int busid;
 json BlackJson;
-string jsonmsg; //收到的初始数据
+__declspec(dllexport) json BindID;//绑定
+__declspec(dllexport) json info;
+__declspec(dllexport) string jsonmsg ="none"; //收到的初始数据
+__declspec(dllexport) string BindList = "none";
 
 using namespace std;
 
@@ -240,7 +243,7 @@ inline void customMsg(string message,string username,string cmdMsg,string userid
 		num++;
 	}
 }
-inline bool OpCheck(string userid,string role)
+__declspec(dllexport) bool OpCheck(string userid,string role)
 {
 	if (op["OP"] == 0)
 	{
@@ -500,6 +503,7 @@ public:
 			catch (...) { notice_type = ""; }
 			try { post_type = jm["post_type"]; }
 			catch (...) { post_type = ""; }
+			BindList = BindID.dump(0);
 			//消息处理
 			if (get_list_status == 3 && notice_type == "" && post_type == "")
 			{
@@ -611,37 +615,6 @@ public:
 				{
 					//msgAPI sendMsg;
 					//sendMsg.groupMsg(GROUPID, "太着急了，待会再试叭");
-				}
-				if (message.find("地图画") == 0 && OpCheck(userid, role) == true && message.substr(9, 1) == "[" && message.find("[CQ:") != message.npos)
-				{
-					string url = message.substr(message.find("https://"), message.find_last_of("]"));
-					string XboxName;
-					if (BindID[userid].empty())
-					{
-						goto out;
-					}
-					else
-					{
-						XboxName = BindID[userid];
-					}
-					url = "execute as " + XboxName + " at " + XboxName + " run map download " + url;
-					Level::runcmd(url);
-				out:;
-				}
-				else if (message.find("地图画") == 0 && OpCheck(userid, role) == true && message.substr(9, 1) != "[" && message.find("[CQ:")!=message.npos)
-				{
-					string url = message.substr(message.find("https://"), message.find_last_of("]"));
-					string XboxName;
-					if (message.substr(9, 1) == " ")
-					{
-						XboxName = message.substr(10, message.find("[CQ:")-10);
-					}
-					else if (message.substr(9, 1) != " ")
-					{
-						XboxName = message.substr(9, message.find("[CQ:")-9);
-					}
-					url = "execute as " + XboxName + " at " + XboxName + " run map download " + url;
-					Level::runcmd(url);
 				}
 				if (message.find("%") == 0 && message.length() >= 2 && with_chat == true && QQforward == true)
 				{
@@ -1164,7 +1137,6 @@ void PluginInit()
 	logger.info("若见Websocket Loaded则机器人启动成功");
 	//信息文件的读取
 
-	json info;
 	fstream infoFile;
 	infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
 	infoFile >> info;

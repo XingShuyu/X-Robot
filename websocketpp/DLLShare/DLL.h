@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+//#include "json.hpp"
 
 #ifdef _EXPORTING
 #define DLL_API    __declspec(dllexport)
@@ -17,5 +18,9 @@ public:
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
 };
-extern DLL_API string jsonmsg;
-extern DLL_API string GROUPID;
+
+DLL_API bool OpCheck(string userid, string role);
+
+DLL_API extern json info;
+DLL_API extern string jsonmsg;
+DLL_API extern json BindID;
