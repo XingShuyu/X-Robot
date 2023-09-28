@@ -1016,9 +1016,9 @@ private:
 
 websocket_endpoint endpoint;
 
-void msgAPI::privateMsg(string QQnum, string msg)
+void msgAPI::commonMsg(string msg)
 {
-
+	endpoint.send(0, msg);
 }
 void groupMsgSend(string group_id, string msg)
 {

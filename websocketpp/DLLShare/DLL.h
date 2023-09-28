@@ -14,7 +14,7 @@ using namespace nlohmann;
 class DLL_API msgAPI
 {
 public:
-	void privateMsg(string QQnum, string msg);
+	void commonMsg(string msg);
 	void groupMsg(string group_id, string msg);
 	/// void sendBack(string msgType, string id, string groupId, string msg);
 };
