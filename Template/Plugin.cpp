@@ -177,14 +177,14 @@ inline void listPlayer()
 	vector<Player*> allPlayer = Level::getAllPlayers();
 	int playerNum = (int)allPlayer.size();
 	int i = 0;
-	string msg = serverName + "服务器在线玩家:\n" + to_string(playerNum) + "位在线玩家\n";
+	string msg = serverName + "服务器在线玩家:\\n" + to_string(playerNum) + "位在线玩家\\n";
 	if (playerNum != 0)
 	{
 		while (i < playerNum)
 		{
 			Player* player = allPlayer[i];
 			i++;
-			msg = msg + player->getRealName() + "\n";
+			msg = msg + player->getRealName() + "\\n";
 		}
 	}
 	msgAPI sendMsg;
@@ -361,7 +361,7 @@ inline void BlackBeCheck(string message)
 				url = "https://blackbe.work/detail/" + url;
 				string qq = to_string(secList["qq"]);
 				string level = to_string(secList["level"]);
-				string msg = "玩家 " + name + " (QQ：" + qq + ")被列于云黑公开库\n危险等级: " + level + "\n封禁原因：" + info + "\n详细信息: " + url;
+				string msg = "玩家 " + name + " (QQ：" + qq + ")被列于云黑公开库\\n危险等级: " + level + "\\n封禁原因：" + info + "\\n详细信息: " + url;
 				sendMsg.groupMsg(GROUPID, msg);
 			}
 		}
@@ -528,17 +528,17 @@ public:
 			{
 				get_list_status = 2;
 				json nameList = jm;
-				string Num = "摸鱼人员名单:\n";
+				string Num = "摸鱼人员名单:\\n";
 				for (json::iterator it = nameList["data"].begin(); it != nameList["data"].end(); ++it) {
 					json secList = it.value();
 					string user_id = to_string(secList["user_id"]);
 					string noneNickname = secList["nickname"];
 					if (BindID[user_id].empty() == true)
 					{
-						Num = Num + "QQ:" + user_id + "," + "群名称:" + noneNickname + "\n";
+						Num = Num + "QQ:" + user_id + "," + "群名称:" + noneNickname + "\\n";
 					}
 				}
-				ofstream Text(".\\plugins\\X-Robot\\NoBindList.txt");
+				ofstream Text(".\\plugins\\X-Robot\\\noBindList.txt");
 				Text << Num << endl;
 				Text.close();
 				get_list_status = 3;
@@ -601,14 +601,14 @@ public:
 					DWORD End = unsigned(GetTickCount64());
 					cpu_usage_ratio = cpu_usage_ratio * 100;
 					int cpu_usage = cpu_usage_ratio;
-					string msg = serverName + "服务器信息" + "\n服务器版本:" + ll::getBdsVersion() + "\nBDS协议号:" + to_string(ll::getServerProtocolVersion()) + "\nLL版本号:" + ll::getLoaderVersionString() + " \n进程PID: " + to_string(current_pid) + " \nCPU使用率 : " + to_string(cpu_usage) + "%\nCPU核数:" + to_string(GetCpuNum()) + " \n内存占用 : " + to_string(statex.dwMemoryLoad) + " %\n总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB\n剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB\n服务器启动时间:" + to_string((End - Start) / 1000 / 60 / 60 / 24) + "天" + to_string(((End - Start) / 1000 / 60 / 60) % 24) + "小时" + to_string(((End - Start) / 1000 / 60) % 60) + "分钟";
+					string msg = serverName + "服务器信息" + "\\n服务器版本:" + ll::getBdsVersion() + "\\nBDS协议号:" + to_string(ll::getServerProtocolVersion()) + "\\nLL版本号:" + ll::getLoaderVersionString() + " \\n进程PID: " + to_string(current_pid) + " \\nCPU使用率 : " + to_string(cpu_usage) + "%\\nCPU核数:" + to_string(GetCpuNum()) + " \\n内存占用 : " + to_string(statex.dwMemoryLoad) + " %\\n总内存 : " + to_string((statex.ullTotalPhys) / 1024 / 1024) + "MB\\n剩余可用 : " + to_string(statex.ullAvailPhys / 1024 / 1024) + "MB\\n服务器启动时间:" + to_string((End - Start) / 1000 / 60 / 60 / 24) + "天" + to_string(((End - Start) / 1000 / 60 / 60) % 24) + "小时" + to_string(((End - Start) / 1000 / 60) % 60) + "分钟";
 					sendMsg.groupMsg(GROUPID, msg);
 					listPlayer();
 				}
 				else if (message == "菜单" && (timeChecker() == true || OpCheck(userid, role) == true))
 				{
 					msgAPI sendMsg;
-					string msg = "\\# X-Robot\n一个为BDS定制的LL机器人\n> 功能列表\n1. MC聊天->QQ的转发\n2. list查在线玩家\n3. QQ中%发送消息到mc\n4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"\n5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询\n6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+					string msg = "X-Robot\\n一个为BDS定制的LL机器人\\n> 功能列表\\n1. MC聊天->QQ的转发\\n2. list查在线玩家\\n3. QQ中%发送消息到mc\\n4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"\\n5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询\\n6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
 					sendMsg.groupMsg(GROUPID, msg);
 				}
 				else if (timeChecker() == false && (message == "菜单" || message == "查服" || message == "list"))
@@ -659,11 +659,11 @@ public:
 								if ((BindID[message].empty() == false) && userid != BindID[message])
 								{
 									string bindqq = BindID[message];
-									string msg = "该账号已经被绑定了哦\n请联系号主qq" + bindqq + "更改绑定后再试吧";
+									string msg = "该账号已经被绑定了哦\\n请联系号主qq" + bindqq + "更改绑定后再试吧";
 									sendMsg.groupMsg(GROUPID, msg);
 									goto outBind;
 								}
-								string msg = "你的XboxID为：" + message + " \n正在为你绑定...";
+								string msg = "你的XboxID为：" + message + " \\n正在为你绑定...";
 								sendMsg.groupMsg(GROUPID, msg);
 								if (!BindID[userid].empty()) {
 									string XboxName = "";
@@ -691,7 +691,7 @@ public:
 						catch (...)
 						{
 							sendMsg.groupMsg(GROUPID, "云黑检查失败，尝试不检查云黑进行绑定");
-							string msg = "你的XboxID为：" + message + " \n正在为你绑定...";
+							string msg = "你的XboxID为：" + message + " \\n正在为你绑定...";
 							sendMsg.groupMsg(GROUPID, msg);
 							if (!BindID[userid].empty()) {
 								string XboxName = "";
@@ -831,7 +831,7 @@ public:
 					a.close();
 				}
 				catch (...) { XboxName = "未绑定" + userid; }
-				string msg = XboxName + "(QQ" + userid + ")离开了我们 \n已自动删除白名单";
+				string msg = XboxName + "(QQ" + userid + ")离开了我们 \\n已自动删除白名单";
 				sendmsg.groupMsg(GROUPID, msg);
 				msg = "whitelist remove " + XboxName;
 				Level::runcmd(msg);
@@ -869,15 +869,15 @@ private:
 };
 
 std::ostream& operator<< (std::ostream& out, connection_metadata const& data) {
-	out << "> URI: " << data.m_uri << "\n"
-		<< "> Status: " << data.m_status << "\n"
-		<< "> Remote Server: " << (data.m_server.empty() ? "None Specified" : data.m_server) << "\n"
-		<< "> Error/close reason: " << (data.m_error_reason.empty() ? "N/A" : data.m_error_reason) << "\n";
-	out << "> Messages Processed: (" << data.m_messages.size() << ") \n";
+	out << "> URI: " << data.m_uri << "\\n"
+		<< "> Status: " << data.m_status << "\\n"
+		<< "> Remote Server: " << (data.m_server.empty() ? "None Specified" : data.m_server) << "\\n"
+		<< "> Error/close reason: " << (data.m_error_reason.empty() ? "N/A" : data.m_error_reason) << "\\n";
+	out << "> Messages Processed: (" << data.m_messages.size() << ") \\n";
 
 	std::vector<std::string>::const_iterator it;
 	for (it = data.m_messages.begin(); it != data.m_messages.end(); ++it) {
-		out << *it << "\n";
+		out << *it << "\\n";
 	}
 
 	return out;
@@ -1049,9 +1049,9 @@ void groupList(string group_id,int status)
 	}
 	if (status == 5)
 	{
-		string abcd = "{\"action\": \"upload_group_file\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"file\": \"..\\NoBindList.txt\",\"name\": \"NoBindList.txt\"}}";
+		string abcd = "{\"action\": \"upload_group_file\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"file\": \"..\\\noBindList.txt\",\"name\": \"NoBindList.txt\"}}";
 		endpoint.send(0, abcd);
-		std::system("powershell rm plugins\\X-Robot\\NoBindList.txt");
+		std::system("powershell rm plugins\\X-Robot\\\noBindList.txt");
 	}
 }
 
