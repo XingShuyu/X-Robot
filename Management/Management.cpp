@@ -10,7 +10,9 @@
 
 #include <iostream>
 #include <fstream>
-#include "yaml-cpp/yaml.h"
+#include "yaml-cpp/emitterstyle.h"
+#include "yaml-cpp/eventhandler.h"
+#include "yaml-cpp/yaml.h" 
 #include "nlohmann/json.hpp"
 #include <windows.h>
 #include <winsock2.h>
@@ -45,7 +47,9 @@ bool start_mode;
 string accessToken;
 string backupList[5];
 string cq_ip;
-
+int id=114514;
+bool connectFailed = true;
+string exampleMsg = "abc";
 //go-cqhttp的API封装
 
 /*
@@ -62,6 +66,8 @@ public:
 INT64 GROUPIDINT;
 string serverName;
 int backupTime;
+int port = 9002;
+bool aleadyConfig;
 
 string GBK_2_UTF8(string gbkStr)
 {
@@ -169,46 +175,43 @@ json info;
 
 int configCQ()
 {
-	std::cout << "配置 go-cqhttp\n";
-	string QQ;
-	string password;
-	cout << "QQ:\n";
-	cin >> QQ;
-	cout << "password:\n";
-	cin >> password;
-	cout << "使用的QSign\n(输入-禁用QSign服务器)\n(推荐输入0使用本地QSign服务器):\n";
-	cin >> QSign;
-	cout << "access-token:\n(强烈建议配置在公网的服务器设置access-token,如果使用本地go-cqhttp,会自动同步access-token)\n";
+	std::cout << "配置Gensokyo核心\n";
+	long long AppID;
+	string Token;
+	string AppSecret;
+	cout << "请输入您的 应用ID:\n";
+	cin >> AppID;
+	cout << "请输入您的 应用令牌:\n";
+	cin >> Token;
+	cout << "请输入您的 客户端密钥:\n";
+	cin >> AppSecret;
+	cout << "请输入您的 端口号 (1000-9999之间选一个数字)";
+	cin >> port;
+	cout << "请输入AccessToken (随便写点啥就行，保密用的)\n";
 	cin >> accessToken;
-	if (QSign == "0") { QSign = "http://127.0.0.1:9000"; }
-	if (QSign == "-") { system("powershell rm .\\plugins\\X-Robot\\qsign\\ -Recurse"); }
-	info["manager"]["qsign"] = QSign;
-	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
-	cout << "CQ已被自动配置完成";
-	config["account"]["uin"] = QQ;
-	config["account"]["password"] = password;
-	config["account"]["sign-server"] = QSign;
-	config["default-middlewares"]["access-token"] = accessToken;
+	Node config = LoadFile(".\\plugins\\X-Robot\\Gensokyo\\config.yml");
+	config["settings"]["app_id"] = AppID;
+	config["settings"]["token"] = Token;
+	config["settings"]["client_secret"] = AppSecret;
+	config["settings"]["server_dir"] = "127.0.0.1";
+	config["settings"]["ws_server_token"] = accessToken;
+	config["settings"]["port"] = port;
+	string b = "ws://127.0.0.1:" + to_string(port) + "/ws";
+	cq_ip = b;
+	info["cq_ip"] = b;
 	info["accessToken"] = accessToken;
+	cout << "Gensokyo核心已被自动配置完成";
 
 	ofstream fout;
-	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+	fout.open(".\\plugins\\X-Robot\\Gensokyo\\config.yml");
 	fout << config;
 	fout.close();
-	return 0;
 }
-int startCq()
+int startGensokyo()
 {
-	system(".\\start_go-cqhttp.bat");
+	system("start_go-cqhttp.bat");
 	return 0;
 }
-
-int startqsign()
-{
-	system("start plugins\\X-Robot\\qsign\\bin\\unidbg-fetch-qsign.bat --basePath=plugins\\X-Robot\\qsign\\txlib\\8.9.73");
-	return 0;
-}
-
 
 class connection_metadata {
 public:
@@ -277,7 +280,7 @@ public:
 			string notice_type;
 			string post_type;
 			string message;
-			try { message = jm["message"]; }//message为消息内容，为string
+			try { message = jm["raw_message"]; }//message为消息内容，为string
 			catch (...) {}
 			try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
 			catch (...) {}
@@ -299,7 +302,24 @@ public:
 			try { post_type = jm["post_type"]; }
 			catch (...) { post_type = ""; }
 			//消息处理
-			if (groupid == GROUPIDINT)
+			if (id == 0) {
+				cout << "连接成功" << endl;
+				connectFailed = false;
+				id = 114514;
+			}
+			if (message == GBK_2_UTF8("工作目录") && role == "owner" && aleadyConfig == false)
+			{
+				cout << "收到工作目录";
+				GROUPIDINT = groupid;
+				aleadyConfig = true;
+				info["manager"]["cqhttp_config"] = true;
+				info["QQ_group_id"] = groupid;
+				fstream infoFile;
+				infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
+				infoFile << info.dump(4);
+				infoFile.close();
+			}
+			if (groupid == GROUPIDINT&& aleadyConfig == true)
 			{
 				if (message == GBK_2_UTF8("开服") && OpCheck(userid, role) == true)
 				{
@@ -400,6 +420,7 @@ public:
 		}
 
 		int new_id = m_next_id++;
+		new_id = 0;
 		connection_metadata::ptr metadata_ptr = websocketpp::lib::make_shared<connection_metadata>(new_id, con->get_handle(), uri);
 		m_connection_list[new_id] = metadata_ptr;
 
@@ -506,26 +527,33 @@ void msgAPI::groupMsg(string group_id, string msg)
 }*/
 
 
+void connectCore()
+{
+	endpoint.close(0, 0, "");
+	id = endpoint.connect(cq_ip);
+	if (id != -1) {
+		std::cout << "> Created connection with id " << id << std::endl;
+	}
+	endpoint.send(0, exampleMsg);
+}
+
 int main()
 {
 	system("chcp 936");
 
 	fstream infoFile;
-	Node config = LoadFile(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
-	interval = config["heartbeat"]["interval"].as<int>();
+	Node config = LoadFile(".\\plugins\\X-Robot\\Gensokyo\\config.yml");
 	infoFile.open(".\\plugins\\X-Robot\\RobotInfo.json");
 	infoFile >> info;
 	GROUPIDINT = info["QQ_group_id"];
 	serverName = info["serverName"];
 	cq_ip = info["cq_ip"];
 	start_mode = info["manager"]["start_mode"];
-	bool aleadyConfig = info["manager"]["cqhttp_config"];
+	aleadyConfig = info["manager"]["cqhttp_config"];
 	accessToken = info["accessToken"];
 	backupTime = info["manager"]["backup_interval"];
-	QSign = info["manager"]["qsign"];
-	config["account"]["sign-server"] = QSign;
 	ofstream fout;
-	fout.open(".\\plugins\\X-Robot\\go-cqhttp\\config.yml");
+	fout.open(".\\plugins\\X-Robot\\Gensokyo\\config.yml");
 	fout << config;
 	fout.close();
 	infoFile.close();
@@ -542,56 +570,44 @@ int main()
 		{
 			ofstream infoFileOut;
 			configCQ();
+
 			infoFileOut.open(".\\plugins\\X-Robot\\RobotInfo.json");
-			info["manager"]["cqhttp_config"] = true;
-			cout << "配置机器人基础信息:" << endl << "你的服务器群QQ号:" << endl;
-			cin >> GROUPIDINT;
+			cout << "配置机器人基础信息:" << endl;
 			cout << "请输入你的服务器名称" << endl;
 			cin >> serverName;
-
-			info["QQ_group_id"] = GROUPIDINT;
 			string OldName = info["serverName"];
 			string JsonInfo = info.dump(4);
 			JsonInfo.replace(JsonInfo.find(OldName), OldName.length(), serverName);
 			infoFileOut << GBK_2_UTF8(JsonInfo);
 			infoFileOut.close();
 		}
-		if ((QSign.find("127.0.0.1") != QSign.npos) || (QSign.find("0.0.0.0") != QSign.npos))
-		{
-			thread tl(startqsign);
-			tl.detach();
-
-			string po = QSign.substr(QSign.find_last_of(":") + 1, QSign.length());
-			ULONG poInt = strtoll(po.c_str(), NULL, 10);
-			while (GetTcpPortState(poInt) == FALSE)
-			{
-				Sleep(1000);
-			}
-			cout << "检测到QSign启动，正在启动go-cqhttp" << endl;
-		}
-		Sleep(3000);
-		thread tl(startCq);
-		tl.detach();
-		if ((cq_ip.find("127.0.0.1") != cq_ip.npos) || (cq_ip.find("0.0.0.0") != cq_ip.npos))
-		{
-			string po = cq_ip.substr(cq_ip.find_last_of(":") + 1, cq_ip.length());
-			ULONG poInt = strtoll(po.c_str(), NULL, 10);
-			while (GetTcpPortState(poInt) == FALSE)
-			{
-				Sleep(1000);
-			}
-			cout << "检测到go-cqhttp启动,启动逻辑单元" << endl;
-		}
 		Sleep(1000);
+		thread th(startGensokyo);
+		th.detach();
+		while (GetTcpPortState(port) == FALSE)
+		{
+			Sleep(700);
+		}
+		cout << "Gensokyo核心启动,5s后进行连接";
 	}
-	int id = endpoint.connect(cq_ip);
+	Sleep(5000);
+link:endpoint.close(0, 0, "Bad Connection"); 
+	id = endpoint.connect(cq_ip);
 	if (id != -1) {
 		std::cout << "> Created connection with id " << id << std::endl;
+	}
+	cout << id << endl;
+
+	Sleep(5000);
+	if (connectFailed)
+	{
+		goto link;
 	}
 
 	while (true)
 	{
 		Sleep(100);
+
 	}
 	return 0;
 }

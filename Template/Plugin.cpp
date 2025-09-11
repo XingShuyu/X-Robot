@@ -202,6 +202,7 @@ inline void customMsg(string message,string username,string cmdMsg,string userid
 	{
 		string fileMsg;
 		if (customMessage[to_string(num)]["QQ"].empty() == true)break;
+		fileMsg = customMessage[to_string(num)]["QQ"];
 		if (fileMsg == message)
 		{
 			
@@ -482,7 +483,7 @@ public:
 			string role = "member";
 			string notice_type;
 			string post_type="";
-			try { message = jm["message"]; }//message为消息内容，为string
+			try { message = jm["raw_message"]; }//message为消息内容，为string
 			catch (...) {}
 			try { role = jm["sender"]["role"]; }//role为发送者的群聊身份，可选值："owner"群主   "admin"管理员   "member"成员,变量类型为string
 			catch (...) {}
@@ -528,17 +529,17 @@ public:
 			{
 				get_list_status = 2;
 				json nameList = jm;
-				string Num = "摸鱼人员名单:\\n";
+				string Num = "摸鱼人员名单:\n";
 				for (json::iterator it = nameList["data"].begin(); it != nameList["data"].end(); ++it) {
 					json secList = it.value();
 					string user_id = to_string(secList["user_id"]);
 					string noneNickname = secList["nickname"];
 					if (BindID[user_id].empty() == true)
 					{
-						Num = Num + "QQ:" + user_id + "," + "群名称:" + noneNickname + "\\n";
+						Num = Num + "QQ:" + user_id + "," + "群名称:" + noneNickname + "\n";
 					}
 				}
-				ofstream Text(".\\plugins\\X-Robot\\\noBindList.txt");
+				ofstream Text(".\\plugins\\X-Robot\\NoBindList.txt");
 				Text << Num << endl;
 				Text.close();
 				get_list_status = 3;
@@ -608,7 +609,7 @@ public:
 				else if (message == "菜单" && (timeChecker() == true || OpCheck(userid, role) == true))
 				{
 					msgAPI sendMsg;
-					string msg = "X-Robot\\n一个为BDS定制的LL机器人\\n> 功能列表\\n1. MC聊天->QQ的转发\\n2. list查在线玩家\\n3. QQ中%发送消息到mc\\n4. QQ中管理员以上级别\"/命令\"控制台执行\"命令\"\\n5. 群员退群取消白名单, \"绑定 ***\"来设置绑定, \"查询绑定\"来查询\\n6. 发送\"查服\"来获取服务器信息7. 发送\"菜单\"获取指令列表8. 自定义指令 ";
+					string msg = "X-Robot\\n一个为BDS定制的LL机器人\\n> 功能列表\\n1. MC聊天->QQ的转发\\n2. list查在线玩家\\n3. QQ中%发送消息到mc\\n4. QQ中管理员以上级别\\\"\\/命令\\\"控制台执行\\\"命令\\\"\\n5. 群员退群取消白名单, \\\"绑定 ***\\\"来设置绑定, \\\"查询绑定\\\"来查询,发送\\\"删除绑定\\\"来删除,使用\\\"未绑定名单\\\"来查看未绑定摸鱼人员。\\n6. 发送\\\"查服\\\"来获取服务器\\n7. 发送\\\"菜单\\\"获取指令列表\\n8. 自定义指令\\n9. 使用\\\"查云黑 ***\\\"来检查玩家是否在黑名单\\n10.  ";
 					sendMsg.groupMsg(GROUPID, msg);
 				}
 				else if (timeChecker() == false && (message == "菜单" || message == "查服" || message == "list"))
@@ -742,7 +743,7 @@ public:
 					else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
 					if (message.find("[CQ:at,qq=") != message.npos)
 					{
-						message = message.substr(10, message.length() - 12);
+						message = message.substr(10, message.length() - 11);
 					}
 					msgAPI sendmsg;
 					string XboxName;
@@ -768,7 +769,7 @@ public:
 					else if (message.substr(12, 1) != " ") { message = message.substr(12, message.length()); }
 					if (message.find("[CQ:at,qq=") != message.npos)
 					{
-						message = message.substr(10, message.length() - 12);
+						message = message.substr(10, message.length() - 11);
 					}
 					string XboxName;
 					if (BindID[message].empty())
@@ -1034,6 +1035,7 @@ void groupList(string group_id,int status)
 {
 	if (status == 1)
 	{
+		std::system("powershell rm plugins\\X-Robot\\NoBindList.txt");
 		string abcd = "{\"action\": \"get_group_member_list\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"no_cache\": \"true\"}}";
 		endpoint.send(0, abcd);
 	}
@@ -1049,9 +1051,8 @@ void groupList(string group_id,int status)
 	}
 	if (status == 5)
 	{
-		string abcd = "{\"action\": \"upload_group_file\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"file\": \"..\\\noBindList.txt\",\"name\": \"NoBindList.txt\"}}";
+		string abcd = "{\"action\": \"upload_group_file\",\"params\": {\"group_id\": \"" + GROUPID + "\",\"file\": \"../NoBindList.txt\",\"name\": \"NoBindList.txt\"}}";
 		endpoint.send(0, abcd);
-		std::system("powershell rm plugins\\X-Robot\\\noBindList.txt");
 	}
 }
 
@@ -1282,7 +1283,7 @@ void PluginInit()
 	{
 		Event::ConsoleOutputEvent::subscribe([](const Event::ConsoleOutputEvent& ev)
 			{
-
+				cout << "控制台事件触发" << endl;
 				cmdMsg = ev.mOutput;
 
 		thread SendCommand(ConsoleEvent);

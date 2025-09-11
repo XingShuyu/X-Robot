@@ -1,0 +1,46 @@
+version: 1
+settings:
+  ws_address: [""]
+  app_id: 1
+  token: IUJ0
+  client_secret: Uu8tR
+  text_intent:
+    - ATMessageEventHandler
+    - DirectMessageHandler
+    - GuildEventHandler
+    - MemberEventHandler
+  global_channel_to_group: true
+  global_private_to_channel: false
+  array: false
+  server_dir: 127.0.0.1
+  port: 9002
+  lotus: false
+  ws_token: ["", "", ""]
+  master_id: [1, 2]
+  enable_ws_server: true
+  ws_server_token: 114514
+  identify_file: true
+  crt: ""
+  key: ""
+  developer_log: false
+  server_user_name: useradmin
+  server_user_password: admin
+  image_sizelimit: 0
+  remove_prefix: false
+  remove_at: true
+  backup_port: 5200
+  develop_access_token_dir: ""
+  develop_bot_id: 1234
+  sandbox_mode: false
+  title: Gensokyo © 2023 - Hoshinonyaruko
+  hash_id: false
+  twoway_echo: false
+  lazy_message_id: false
+  visible_ip: false
+  black_prefix_mode: false
+  dev_message_id: false
+  forward_msg_limit: 3
+  white_prefix_mode: false
+  black_prefixs: [""]
+  visual_prefixs: [""]
+  white_prefixs: [""]

@@ -1,2 +1,2 @@
-cd .\plugins\X-Robot\go-cqhttp\
-go-cqhttp.exe
+cd .\plugins\X-Robot\Gensokyo\
+gensokyo.bat
